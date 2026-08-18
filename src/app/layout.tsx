@@ -4,6 +4,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import { MotionProvider } from "@/components/motion";
 import { ToastProvider } from "@/components/ui";
 import {
+  BackToTop,
   Footer,
   NavigationLoader,
   Navbar,
@@ -101,6 +102,7 @@ export default function RootLayout({
             </main>
 
             <Footer />
+            <BackToTop />
           </ToastProvider>
         </MotionProvider>
       </body>

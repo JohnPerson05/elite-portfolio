@@ -20,5 +20,8 @@ export { NavigationLoader } from "./NavigationLoader";
 export { LoadingVisual } from "./LoadingVisual";
 export type { LoadingVisualProps } from "./LoadingVisual";
 
+export { BackToTop } from "./BackToTop";
+export type { BackToTopProps } from "./BackToTop";
+
 export { BRAND_NAME, NAV_LINKS, PRIMARY_CTA, SOCIAL_LINKS } from "./navigation";
 export type { NavLink, SocialLink } from "./navigation";
