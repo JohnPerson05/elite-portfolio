@@ -16,6 +16,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "auth:hash": "tsx scripts/hash-password.ts",
+    "admin:setup": "tsx scripts/setup-admin.ts",
     "db:seed": "prisma db seed",
     "db:sync-profile": "tsx scripts/sync-profile-content.ts"
   },
