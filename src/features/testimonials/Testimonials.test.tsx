@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { TestimonialView } from "@/types";
 import { mockMatchMedia, reducedMotionMatcher } from "@/test/match-media";
 import { Testimonials } from "./Testimonials";
@@ -109,8 +109,8 @@ describe("Testimonials — optional media renders gracefully (Req 6.2)", () => {
       makeTestimonial(1, {
         author: "Dana Whitfield",
         company: "Vertex Labs",
-        avatarUrl: "/images/testimonials/dana.jpg",
-        logoUrl: "/images/logos/vertex.svg",
+        avatarUrl: "https://images.example.com/dana.jpg",
+        logoUrl: "https://images.example.com/vertex.svg",
       }),
     ]);
 
@@ -129,7 +129,7 @@ describe("Testimonials — optional media renders gracefully (Req 6.2)", () => {
       makeTestimonial(1, {
         author: "Marcus Lee",
         company: "Northwind Systems",
-        avatarUrl: "/images/testimonials/marcus.jpg",
+        avatarUrl: "https://images.example.com/marcus.jpg",
         logoUrl: undefined,
       }),
     ]);
@@ -139,6 +139,26 @@ describe("Testimonials — optional media renders gracefully (Req 6.2)", () => {
       within(card).getByRole("img", { name: /photo of marcus lee/i }),
     ).toBeInTheDocument();
     expect(within(card).queryByRole("img", { name: /logo/i })).toBeNull();
+  });
+
+  it("falls back cleanly when optional media fails to load", async () => {
+    mockMatchMedia(reducedMotionMatcher);
+    await renderTestimonials([
+      makeTestimonial(1, {
+        author: "Dana Whitfield",
+        avatarUrl: "https://images.example.com/missing-avatar.jpg",
+        logoUrl: "https://images.example.com/missing-logo.svg",
+      }),
+    ]);
+
+    const card = screen.getByRole("figure", { name: /dana whitfield/i });
+    fireEvent.error(
+      within(card).getByRole("img", { name: /photo of dana whitfield/i }),
+    );
+    fireEvent.error(within(card).getByRole("img", { name: /company 1 logo/i }));
+
+    expect(within(card).queryAllByRole("img")).toHaveLength(0);
+    expect(within(card).getByText("DW")).toBeInTheDocument();
   });
 
   it("renders no images when neither avatar nor logo is present, without breaking layout", async () => {
@@ -186,8 +206,8 @@ describe("Testimonials — optional media renders gracefully (Req 6.2)", () => {
       makeTestimonial(1, {
         author: "With Media",
         company: "Acme",
-        avatarUrl: "/images/testimonials/a.jpg",
-        logoUrl: "/images/logos/acme.svg",
+        avatarUrl: "https://images.example.com/a.jpg",
+        logoUrl: "https://images.example.com/acme.svg",
       }),
       makeTestimonial(2, {
         author: "No Media",

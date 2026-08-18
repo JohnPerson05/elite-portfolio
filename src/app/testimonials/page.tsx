@@ -16,8 +16,8 @@ export default function TestimonialsPage() {
       <PageHero
         index="04"
         eyebrow="Professional references"
-        title="Credibility without invented endorsements."
-        description="References can be shared privately when relevant to an opportunity or project. No placeholder quotes or fictional attribution are published here."
+        title="Professional perspective, shared with context."
+        description="A recommendation-style view of trusted working relationships. References are shared privately when relevant to a role, engagement, or project conversation."
       />
       <Testimonials
         eyebrow="Available on request"

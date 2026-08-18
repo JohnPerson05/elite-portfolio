@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TestimonialView } from "@/types";
-import { hasMedia, orderTestimonials } from "./config";
+import { hasMedia, hasReferencePhoto, orderTestimonials } from "./config";
 
 /** Build a TestimonialView with overridable fields. */
 function makeTestimonial(
@@ -58,5 +58,14 @@ describe("hasMedia — optional media guard (Req 6.2)", () => {
     expect(hasMedia(null)).toBe(false);
     expect(hasMedia("")).toBe(false);
     expect(hasMedia("   ")).toBe(false);
+  });
+});
+
+describe("hasReferencePhoto", () => {
+  it("rejects generic seeded portraits and accepts supplied photos", () => {
+    expect(hasReferencePhoto("/images/testimonials/marcus.jpg")).toBe(false);
+    expect(hasReferencePhoto("https://images.example.com/marcus.jpg")).toBe(
+      true,
+    );
   });
 });

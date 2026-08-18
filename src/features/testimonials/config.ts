@@ -42,3 +42,11 @@ export function orderTestimonials(
 export function hasMedia(url?: string | null): url is string {
   return typeof url === "string" && url.trim().length > 0;
 }
+
+/**
+ * Older seed records used generic local portrait illustrations. Treat those as
+ * placeholders so references without a real supplied photo render initials.
+ */
+export function hasReferencePhoto(url?: string | null): url is string {
+  return hasMedia(url) && !url.startsWith("/images/testimonials/");
+}
