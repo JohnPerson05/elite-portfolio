@@ -2,6 +2,7 @@
 
 import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { upload } from "@vercel/blob/client";
 
 import {
   Button,
@@ -141,6 +142,9 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
   const [fieldErrors, setFieldErrors] = useState<ProjectFieldErrors>({});
   const [formError, setFormError] = useState<string | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadMessage, setUploadMessage] = useState<string | undefined>();
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -208,6 +212,89 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
       next[destination] = currentUrl;
       return { ...current, imageUrls: next };
     });
+  };
+
+  const uploadImages = async (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (selectedFiles.length === 0) return;
+
+    const existingCount = values.imageUrls.filter(
+      (url) => url.trim().length > 0,
+    ).length;
+    const availableSlots = 12 - existingCount;
+    const files = selectedFiles.slice(0, availableSlots);
+
+    if (availableSlots === 0) {
+      setUploadMessage("Remove an image before uploading another.");
+      return;
+    }
+    if (selectedFiles.length > availableSlots) {
+      setUploadMessage(
+        `Only ${availableSlots} more image${availableSlots === 1 ? "" : "s"} can be added.`,
+      );
+    } else {
+      setUploadMessage(undefined);
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    let uploadedCount = 0;
+    for (const [index, file] of files.entries()) {
+      if (!file.type.startsWith("image/") || file.size > 10 * 1024 * 1024) {
+        setUploadMessage(`${file.name} must be an image no larger than 10 MB.`);
+        continue;
+      }
+
+      const folder =
+        values.slug
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "draft";
+      const filename =
+        file.name.replace(/[^a-zA-Z0-9._-]+/g, "-") || "project-image";
+
+      try {
+        const blob = await upload(
+          `projects/${folder}/${Date.now()}-${index}-${filename}`,
+          file,
+          {
+            access: "public",
+            handleUploadUrl: "/api/admin/project-images",
+            multipart: file.size > 4 * 1024 * 1024,
+            onUploadProgress: ({ percentage }) =>
+              setUploadProgress(
+                Math.round(
+                  ((uploadedCount + percentage / 100) / files.length) * 100,
+                ),
+              ),
+          },
+        );
+
+        setValues((current) => {
+          const populated = current.imageUrls.filter(
+            (url) => url.trim().length > 0,
+          );
+          return {
+            ...current,
+            imageUrls: [...populated, blob.url].slice(0, 12),
+          };
+        });
+        uploadedCount += 1;
+      } catch {
+        setUploadMessage(`Upload failed for ${file.name}. Please try again.`);
+      }
+    }
+
+    setUploadProgress(100);
+    setUploading(false);
+    if (uploadedCount > 0) {
+      setUploadMessage(
+        `${uploadedCount} image${uploadedCount === 1 ? "" : "s"} uploaded. Save the project to publish the gallery.`,
+      );
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -377,9 +464,53 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
             Project images
           </legend>
           <p className="mb-space-3 text-caption leading-relaxed text-muted">
-            Add up to 12 image URLs. The first image is the cover shown on
-            project cards. Use the arrows to change the display order.
+            Upload up to 12 images or add existing URLs manually. The first
+            image becomes the project-card cover.
           </p>
+
+          <div className="border-accent/40 bg-accent/[0.04] mb-space-3 rounded-lg border border-dashed p-space-3">
+            <label className="hover:bg-accent/90 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg bg-accent px-space-3 font-sans text-body font-medium text-bg transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                multiple
+                disabled={uploading || values.imageUrls.length >= 12}
+                onChange={(event) => void uploadImages(event)}
+                className="sr-only"
+              />
+              {uploading
+                ? `Uploading… ${uploadProgress}%`
+                : "Upload project images"}
+            </label>
+            <span className="ml-space-2 text-caption text-muted">
+              JPG, PNG, WebP, GIF, or AVIF · 10 MB each
+            </span>
+
+            {uploading ? (
+              <div
+                role="progressbar"
+                aria-label="Project image upload progress"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={uploadProgress}
+                className="mt-space-2 h-1.5 overflow-hidden rounded-full bg-white/10"
+              >
+                <div
+                  className="h-full rounded-full bg-accent transition-[width]"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            ) : null}
+
+            {uploadMessage ? (
+              <p
+                role="status"
+                className="mt-space-2 text-caption leading-relaxed text-muted"
+              >
+                {uploadMessage}
+              </p>
+            ) : null}
+          </div>
 
           <div className="flex flex-col gap-space-3">
             {values.imageUrls.map((url, index) => (
@@ -522,7 +653,7 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
             type="submit"
             variant="primary"
             size="lg"
-            disabled={submitting}
+            disabled={submitting || uploading}
           >
             {submitting
               ? PROJECT_SUBMITTING_LABEL

@@ -144,21 +144,35 @@ export function Hero(props: HeroProps) {
             </div>
           </FadeUp>
 
-          {/* Three primary CTAs (Req 1.2). Wrap so they stack cleanly on
-              mobile and stay full-width-friendly for touch (Req 1.7). */}
+          {/* Three primary CTAs (Req 1.2), kept on one consistent row. */}
           <FadeUp className="w-full">
-            <div className="flex flex-col flex-wrap gap-space-2 sm:flex-row sm:items-center">
-              <MagneticCta>
-                <Button href={content.projectsHref} variant="primary" size="lg">
+            <div className="grid w-full grid-cols-3 items-center gap-space-1 sm:flex sm:flex-nowrap sm:gap-space-2">
+              <MagneticCta className="inline-flex w-full sm:w-auto">
+                <Button
+                  href={content.projectsHref}
+                  variant="primary"
+                  size="md"
+                  className="w-full whitespace-nowrap px-1.5 text-[0.58rem] min-[380px]:px-space-2 min-[380px]:text-caption sm:w-auto sm:px-space-3 sm:text-body"
+                >
                   View Projects
                 </Button>
               </MagneticCta>
 
-              <Button href={content.resumeHref} variant="outline" size="lg">
+              <Button
+                href={content.resumeHref}
+                variant="outline"
+                size="md"
+                className="w-full whitespace-nowrap px-1.5 text-[0.58rem] min-[380px]:px-space-2 min-[380px]:text-caption sm:w-auto sm:px-space-3 sm:text-body"
+              >
                 Download Resume
               </Button>
 
-              <Button href={content.contactHref} variant="ghost" size="lg">
+              <Button
+                href={content.contactHref}
+                variant="ghost"
+                size="md"
+                className="w-full whitespace-nowrap px-1.5 text-[0.58rem] min-[380px]:px-space-2 min-[380px]:text-caption sm:w-auto sm:px-space-3 sm:text-body"
+              >
                 Contact Me
               </Button>
             </div>
