@@ -150,7 +150,14 @@ export default function AboutPage() {
                 <Button href="/projects" variant="primary" size="md">
                   View project work
                 </Button>
-                <Button href="/resume" variant="outline" size="md">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="md"
+                  disabled
+                  aria-disabled="true"
+                  title="Résumé download is currently unavailable"
+                >
                   Download résumé
                 </Button>
               </div>

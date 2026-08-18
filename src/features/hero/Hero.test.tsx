@@ -19,16 +19,17 @@ describe("Hero", () => {
     expect(screen.getByText(HERO_CONTENT.valueProposition)).toBeInTheDocument();
   });
 
-  it("renders all three CTAs with the correct targets (Req 1.2, 1.4, 1.5, 1.6)", () => {
+  it("renders active project/contact links and a disabled résumé control", () => {
     render(<Hero />);
 
     const viewProjects = screen.getByRole("link", { name: /view projects/i });
     expect(viewProjects).toHaveAttribute("href", "/projects");
 
-    const downloadResume = screen.getByRole("link", {
+    const downloadResume = screen.getByRole("button", {
       name: /download resume/i,
     });
-    expect(downloadResume).toHaveAttribute("href", "/resume");
+    expect(downloadResume).toBeDisabled();
+    expect(downloadResume).toHaveAttribute("aria-disabled", "true");
 
     const contactMe = screen.getByRole("link", { name: /contact me/i });
     expect(contactMe).toHaveAttribute("href", "/contact");

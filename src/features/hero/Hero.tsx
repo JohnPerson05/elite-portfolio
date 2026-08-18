@@ -159,9 +159,12 @@ export function Hero(props: HeroProps) {
               </MagneticCta>
 
               <Button
-                href={content.resumeHref}
+                type="button"
                 variant="outline"
                 size="md"
+                disabled
+                aria-disabled="true"
+                title="Résumé download is currently unavailable"
                 className="w-full whitespace-nowrap px-1.5 text-[0.58rem] min-[380px]:px-space-2 min-[380px]:text-caption sm:w-auto sm:px-space-3 sm:text-body"
               >
                 Download Resume
