@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 import { requireSession } from "@/lib/auth";
 import { projectSchema } from "@/lib/validation";
 import { MAX_FEATURED, MIN_FEATURED } from "@/features/projects/config";
+import { encodeProjectImages } from "@/features/projects/media";
 import type { ActionResult } from "@/types";
 
 /**
@@ -36,6 +37,9 @@ import type { ActionResult } from "@/types";
 
 /** Public homepage path to revalidate after a project mutation (Req 10.1/10.2). */
 const PUBLIC_HOME_PATH = "/";
+/** Public project archive and detail routes. */
+const PUBLIC_PROJECTS_PATH = "/projects";
+const PUBLIC_PROJECT_DETAIL_PATTERN = "/projects/[slug]";
 /** Admin projects list path to revalidate after a mutation. */
 const ADMIN_PROJECTS_PATH = "/admin/projects";
 
@@ -49,9 +53,22 @@ export type ProjectMutationInput = z.input<typeof projectSchema>;
 const GENERIC_SAVE_ERROR =
   "Something went wrong saving the project. Please try again.";
 
+function toProjectData(parsed: z.infer<typeof projectSchema>) {
+  const { imageUrls, thumbnailUrl, ...data } = parsed;
+  const persistedImages =
+    imageUrls.length > 0 ? imageUrls : thumbnailUrl ? [thumbnailUrl] : [];
+
+  return {
+    ...data,
+    thumbnailUrl: encodeProjectImages(persistedImages),
+  };
+}
+
 /** Revalidate the public homepage and the admin projects routes. */
 function revalidateProjectSurfaces(): void {
   revalidatePath(PUBLIC_HOME_PATH);
+  revalidatePath(PUBLIC_PROJECTS_PATH);
+  revalidatePath(PUBLIC_PROJECT_DETAIL_PATTERN, "page");
   revalidatePath(ADMIN_PROJECTS_PATH);
 }
 
@@ -94,7 +111,9 @@ export async function createProject(
 
   // 3. Persist.
   try {
-    const created = await prisma.project.create({ data: parsed.data });
+    const created = await prisma.project.create({
+      data: toProjectData(parsed.data),
+    });
     // 4. Reflect on the public site + admin list (Req 10.1).
     revalidateProjectSurfaces();
     return { success: true, data: { id: created.id } };
@@ -129,7 +148,7 @@ export async function updateProject(
   try {
     const updated = await prisma.project.update({
       where: { id },
-      data: parsed.data,
+      data: toProjectData(parsed.data),
     });
     revalidateProjectSurfaces();
     return { success: true, data: { id: updated.id } };

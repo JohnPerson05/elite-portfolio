@@ -14,9 +14,9 @@
 import type { TestimonialView } from "@/types";
 
 /** Default eyebrow label shown above the section heading. */
-export const TESTIMONIALS_EYEBROW = "Endorsements";
+export const TESTIMONIALS_EYEBROW = "References";
 /** Default section heading. */
-export const TESTIMONIALS_HEADING = "What people say";
+export const TESTIMONIALS_HEADING = "Professional references";
 
 /**
  * Order testimonials for public display by their explicit `order` field

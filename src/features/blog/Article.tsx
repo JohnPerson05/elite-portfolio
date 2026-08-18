@@ -49,11 +49,14 @@ export function Article({ post, className }: ArticleProps) {
             </time>
           ) : null}
 
-          <h1 className="font-display text-h1 font-semibold tracking-tight text-text text-balance">
+          <h1
+            id={titleId}
+            className="text-balance font-display text-h1 font-semibold tracking-tight text-text"
+          >
             {post.title}
           </h1>
 
-          <p className="font-sans text-body-lg text-muted text-pretty">
+          <p className="text-pretty font-sans text-body-lg text-muted">
             {post.excerpt}
           </p>
         </header>
@@ -72,7 +75,7 @@ export function Article({ post, className }: ArticleProps) {
         </div>
       ) : null}
 
-      <div className="mt-space-8 whitespace-pre-wrap font-sans text-body-lg leading-relaxed text-text text-pretty">
+      <div className="mt-space-8 whitespace-pre-wrap text-pretty font-sans text-body-lg leading-relaxed text-text">
         {post.content}
       </div>
     </article>

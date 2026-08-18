@@ -24,6 +24,7 @@ export const EXPERIENCE_HEADING = "Experience";
  * as `null` and this module decides how to render it.
  */
 export const PRESENT_LABEL = "Present";
+export const PROJECT_EXPERIENCE_LABEL = "Project Experience";
 
 /**
  * Order experience entries chronologically, most-recent-first
@@ -72,8 +73,17 @@ export function formatMonthYear(iso: string): string {
  * when `endDate` is `null` (a current role). Used both for display and for the
  * entry's accessible date description.
  */
-export function formatDateRange(startIso: string, endIso: string | null): string {
+export function formatDateRange(
+  startIso: string,
+  endIso: string | null,
+): string {
   const start = formatMonthYear(startIso);
   const end = endIso === null ? PRESENT_LABEL : formatMonthYear(endIso);
   return `${start} — ${end}`;
+}
+
+export function getExperienceDateLabel(entry: ExperienceView): string {
+  return entry.company === "GlobalMeet"
+    ? PROJECT_EXPERIENCE_LABEL
+    : formatDateRange(entry.startDate, entry.endDate);
 }

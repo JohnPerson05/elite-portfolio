@@ -22,3 +22,20 @@ export async function getFeaturedProjects(): Promise<ProjectView[]> {
 
   return selectFeatured(rows.map(toProjectView));
 }
+
+/** Fetch the complete public work archive, newest work first within its order. */
+export async function getProjects(): Promise<ProjectView[]> {
+  const rows = await prisma.project.findMany({
+    orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+  });
+
+  return rows.map(toProjectView);
+}
+
+/** Fetch one public project by its stable slug. */
+export async function getProjectBySlug(
+  slug: string,
+): Promise<ProjectView | null> {
+  const row = await prisma.project.findUnique({ where: { slug } });
+  return row ? toProjectView(row) : null;
+}

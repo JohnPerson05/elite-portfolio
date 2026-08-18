@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BRAND_NAME, NAV_LINKS, SOCIAL_LINKS } from "./navigation";
 
@@ -19,10 +20,7 @@ export function Footer({ className }: FooterProps) {
 
   return (
     <footer
-      className={cn(
-        "border-t border-hairline bg-bg-secondary",
-        className,
-      )}
+      className={cn("border-t border-hairline bg-bg-secondary", className)}
     >
       <div className="mx-auto w-full max-w-content px-space-2 py-space-8 sm:px-space-4">
         <div className="flex flex-col gap-space-6 md:flex-row md:items-start md:justify-between">
@@ -31,8 +29,9 @@ export function Footer({ className }: FooterProps) {
             <p className="font-display text-body-lg font-semibold tracking-tight text-text">
               {BRAND_NAME}
             </p>
-            <p className="mt-space-1 text-body text-muted text-pretty">
-              Premium engineering work, shipped with craft and care.
+            <p className="mt-space-1 text-pretty text-body text-muted">
+              Backend and full-stack engineering for enterprise systems, product
+              integrations, and focused MVP delivery.
             </p>
           </div>
 
@@ -45,7 +44,7 @@ export function Footer({ className }: FooterProps) {
               <ul className="mt-space-2 flex flex-col gap-space-1">
                 {NAV_LINKS.map((link) => (
                   <li key={link.href}>
-                    <a
+                    <Link
                       href={link.href}
                       className={cn(
                         "inline-flex min-h-11 items-center rounded-md text-body text-muted",
@@ -54,36 +53,37 @@ export function Footer({ className }: FooterProps) {
                       )}
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
             </nav>
 
-            {/* Social */}
-            <div>
-              <h2 className="text-caption font-medium uppercase tracking-widest text-muted">
-                Connect
-              </h2>
-              <ul className="mt-space-2 flex flex-col gap-space-1">
-                {SOCIAL_LINKS.map((social) => (
-                  <li key={social.href}>
-                    <a
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cn(
-                        "inline-flex min-h-11 items-center rounded-md text-body text-muted",
-                        "transition-colors hover:text-text",
-                        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                      )}
-                    >
-                      {social.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {SOCIAL_LINKS.length > 0 ? (
+              <div>
+                <h2 className="text-caption font-medium uppercase tracking-widest text-muted">
+                  Connect
+                </h2>
+                <ul className="mt-space-2 flex flex-col gap-space-1">
+                  {SOCIAL_LINKS.map((social) => (
+                    <li key={social.href}>
+                      <a
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "inline-flex min-h-11 items-center rounded-md text-body text-muted",
+                          "transition-colors hover:text-text",
+                          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                        )}
+                      >
+                        {social.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </div>
 

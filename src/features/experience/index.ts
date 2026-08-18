@@ -3,6 +3,7 @@
 export { Timeline } from "./Timeline";
 export type { TimelineProps } from "./Timeline";
 export { getExperiences } from "./data";
+export { PROFILE_EXPERIENCES } from "./profile-data";
 export {
   orderExperiences,
   formatDateRange,

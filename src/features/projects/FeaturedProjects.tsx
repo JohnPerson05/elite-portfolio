@@ -1,12 +1,9 @@
+import Link from "next/link";
 import { FadeUp, Stagger } from "@/components/motion";
 import { EmptyState, SectionHeading } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { ProjectView } from "@/types";
-import {
-  PROJECTS_EYEBROW,
-  PROJECTS_HEADING,
-  selectFeatured,
-} from "./config";
+import { PROJECTS_EYEBROW, PROJECTS_HEADING, selectFeatured } from "./config";
 import { getFeaturedProjects } from "./data";
 import { ProjectCard } from "./ProjectCard";
 
@@ -89,6 +86,12 @@ export async function FeaturedProjects({
             description="Featured work will appear here once it's published."
           />
         )}
+        <Link
+          href="/projects"
+          className="mx-auto inline-flex min-h-11 items-center font-mono text-caption uppercase tracking-widest text-accent transition-colors hover:text-text"
+        >
+          Explore the full work archive&nbsp; →
+        </Link>
       </div>
     </section>
   );

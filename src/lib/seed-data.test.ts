@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PostStatus, SkillCategory } from "@prisma/client";
+import { SkillCategory } from "@prisma/client";
 
 import {
   experiences,
@@ -42,14 +42,11 @@ describe("seed projects", () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it("includes a project with both github and live links", () => {
-    const both = projects.filter((p) => p.githubUrl && p.liveUrl);
-    expect(both.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("includes a project missing at least one link (Requirement 3.3 / Property 2)", () => {
-    const missingALink = projects.filter((p) => !p.githubUrl || !p.liveUrl);
-    expect(missingALink.length).toBeGreaterThanOrEqual(1);
+  it("does not publish placeholder external project links", () => {
+    for (const project of projects) {
+      expect(project.githubUrl).toBeNull();
+      expect(project.liveUrl).toBeNull();
+    }
   });
 
   it("populates the narrative fields for every project", () => {
@@ -88,21 +85,30 @@ describe("seed skills", () => {
   it("includes the headline technologies named in the requirements", () => {
     const names = new Set(skills.map((s) => s.name));
     for (const expected of [
+      "Java",
+      "Spring Boot",
+      "Microservices Architecture",
+      "REST APIs",
+      "JUnit Testing",
+      "Azure DevOps CI/CD",
+      "OpenShift",
+      "Datadog",
+      "Grafana",
+      "React.js",
       "Next.js",
-      "React",
       "TypeScript",
       "Tailwind CSS",
-      "Node.js",
-      "Express",
-      "PostgreSQL",
-      "Prisma",
+      "Reusable UI Components",
+      "MVP Prototyping",
       "Vercel",
-      "Neon",
-      "Docker",
-      "OpenAI",
-      "LangChain",
-      "RAG",
-      "Vector Databases",
+      "Codex",
+      "Claude",
+      "Lovable",
+      "v0 by Vercel",
+      "Agile Scrum",
+      "Jira",
+      "Confluence",
+      "Postman API",
     ]) {
       expect(names.has(expected)).toBe(true);
     }
@@ -120,6 +126,20 @@ describe("seed experience", () => {
     expect(current.length).toBe(1);
   });
 
+  it("matches John Person Narral's verified career history", () => {
+    expect(
+      experiences.map(({ company, position }) => ({ company, position })),
+    ).toEqual([
+      { company: "ING", position: "Backend Engineer" },
+      { company: "GlobalMeet", position: "Full Stack Developer" },
+      { company: "IBM Corp.", position: "Application Developer" },
+      {
+        company: "Accenture Inc.",
+        position: "Software Engineer Analyst",
+      },
+    ]);
+  });
+
   it("lists achievements for every entry", () => {
     for (const e of experiences) {
       const achievements = e.achievements as string[] | undefined;
@@ -129,44 +149,13 @@ describe("seed experience", () => {
 });
 
 describe("seed testimonials", () => {
-  it("provides 3–4 entries", () => {
-    expect(testimonials.length).toBeGreaterThanOrEqual(3);
-    expect(testimonials.length).toBeLessThanOrEqual(4);
-  });
-
-  it("includes at least one testimonial with media", () => {
-    const withMedia = testimonials.filter((t) => t.avatarUrl || t.logoUrl);
-    expect(withMedia.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("includes at least one testimonial without any media (Requirement 6.2)", () => {
-    const withoutMedia = testimonials.filter((t) => !t.avatarUrl && !t.logoUrl);
-    expect(withoutMedia.length).toBeGreaterThanOrEqual(1);
+  it("does not publish invented professional endorsements", () => {
+    expect(testimonials).toEqual([]);
   });
 });
 
 describe("seed posts", () => {
-  it("includes at least one published post with a publishedAt date (Requirement 7.4)", () => {
-    const published = posts.filter(
-      (p) => p.status === PostStatus.PUBLISHED && p.publishedAt != null,
-    );
-    expect(published.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("includes at least one draft post (Requirement 7.4 / Property 3)", () => {
-    const drafts = posts.filter((p) => p.status === PostStatus.DRAFT);
-    expect(drafts.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("never assigns a publishedAt to a draft post", () => {
-    const draftsWithDate = posts.filter(
-      (p) => p.status === PostStatus.DRAFT && p.publishedAt != null,
-    );
-    expect(draftsWithDate.length).toBe(0);
-  });
-
-  it("uses unique slugs across all posts", () => {
-    const slugs = posts.map((p) => p.slug);
-    expect(new Set(slugs).size).toBe(slugs.length);
+  it("does not publish writing that has not been supplied by the owner", () => {
+    expect(posts).toEqual([]);
   });
 });

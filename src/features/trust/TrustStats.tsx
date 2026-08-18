@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Counter } from "@/components/motion";
 import { Card, SectionHeading } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ export interface TrustStatsProps {
   eyebrow?: string;
   /** Section heading text. */
   heading?: string;
+  showDetailLink?: boolean;
   className?: string;
 }
 
@@ -44,6 +46,7 @@ export function TrustStats({
   stats = TRUST_STATS,
   eyebrow = "By the numbers",
   heading = "Proven, measurable impact",
+  showDetailLink = true,
   className,
 }: TrustStatsProps) {
   const headingId = "trust-heading";
@@ -78,15 +81,23 @@ export function TrustStats({
               hover="border"
               className="flex flex-col items-center gap-space-1 px-space-2 py-space-4 text-center"
             >
-              <dd className="font-display text-h2 font-bold tracking-tight text-text">
-                <Counter value={stat.value} suffix={stat.suffix} />
-              </dd>
-              <dt className="font-sans text-caption font-medium uppercase tracking-widest text-muted">
+              <dt className="order-2 font-sans text-caption font-medium uppercase tracking-widest text-muted">
                 {stat.label}
               </dt>
+              <dd className="order-1 font-display text-h2 font-bold tracking-tight text-text">
+                <Counter value={stat.value} suffix={stat.suffix} />
+              </dd>
             </Card>
           ))}
         </dl>
+        {showDetailLink ? (
+          <Link
+            href="/about"
+            className="mx-auto inline-flex min-h-11 items-center font-mono text-caption uppercase tracking-widest text-accent transition-colors hover:text-text"
+          >
+            About the engineering practice&nbsp; →
+          </Link>
+        ) : null}
       </div>
     </section>
   );

@@ -36,9 +36,9 @@ export interface TrustStat {
  * the display order, left-to-right then wrapping on smaller grids.
  */
 export const TRUST_STATS: readonly TrustStat[] = [
-  { id: "experience", label: "Years of Experience", value: 8, suffix: "+" },
-  { id: "projects", label: "Projects Completed", value: 50, suffix: "+" },
-  { id: "technologies", label: "Technologies", value: 30, suffix: "+" },
-  { id: "certifications", label: "Certifications", value: 6 },
-  { id: "awards", label: "Awards", value: 4 },
+  { id: "experience", label: "Years of Experience", value: 6, suffix: "+" },
+  { id: "organizations", label: "Organizations", value: 4 },
+  { id: "technologies", label: "Core Technologies", value: 30, suffix: "+" },
+  { id: "domains", label: "Delivery Domains", value: 5 },
+  { id: "aitools", label: "AI Development Tools", value: 4 },
 ];

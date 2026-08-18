@@ -10,10 +10,10 @@ describe("TrustStats", () => {
     render(<TrustStats />);
 
     expect(screen.getByText("Years of Experience")).toBeInTheDocument();
-    expect(screen.getByText("Projects Completed")).toBeInTheDocument();
-    expect(screen.getByText("Technologies")).toBeInTheDocument();
-    expect(screen.getByText("Certifications")).toBeInTheDocument();
-    expect(screen.getByText("Awards")).toBeInTheDocument();
+    expect(screen.getByText("Organizations")).toBeInTheDocument();
+    expect(screen.getByText("Core Technologies")).toBeInTheDocument();
+    expect(screen.getByText("Delivery Domains")).toBeInTheDocument();
+    expect(screen.getByText("AI Development Tools")).toBeInTheDocument();
   });
 
   it("exposes an accessible trust section landmark labelled by its heading", () => {
@@ -34,11 +34,10 @@ describe("TrustStats", () => {
 
     // No counting animation — final values appear right away, with suffixes
     // where configured (Req 2.3).
-    expect(screen.getByText("8+")).toBeInTheDocument(); // Years of Experience
-    expect(screen.getByText("50+")).toBeInTheDocument(); // Projects Completed
-    expect(screen.getByText("30+")).toBeInTheDocument(); // Technologies
-    expect(screen.getByText("6")).toBeInTheDocument(); // Certifications
-    expect(screen.getByText("4")).toBeInTheDocument(); // Awards
+    expect(screen.getByText("6+")).toBeInTheDocument(); // Years of Experience
+    expect(screen.getByText("30+")).toBeInTheDocument();
+    expect(screen.getByText("5")).toBeInTheDocument();
+    expect(screen.getAllByText("4")).toHaveLength(2);
   });
 
   it("includes the configured suffix on values that define one (Req 2.3)", () => {
@@ -48,7 +47,7 @@ describe("TrustStats", () => {
     // Stats with a suffix render it; stats without one render the bare number.
     for (const stat of TRUST_STATS) {
       const expected = `${stat.value.toLocaleString("en-US")}${stat.suffix ?? ""}`;
-      expect(screen.getByText(expected)).toBeInTheDocument();
+      expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
     }
   });
 
@@ -61,11 +60,10 @@ describe("TrustStats", () => {
     // count-up runs for ~1.5s, so allow the assertion to retry past that.
     await waitFor(
       () => {
-        expect(screen.getByText("8+")).toBeInTheDocument();
-        expect(screen.getByText("50+")).toBeInTheDocument();
+        expect(screen.getByText("6+")).toBeInTheDocument();
         expect(screen.getByText("30+")).toBeInTheDocument();
-        expect(screen.getByText("6")).toBeInTheDocument();
-        expect(screen.getByText("4")).toBeInTheDocument();
+        expect(screen.getByText("5")).toBeInTheDocument();
+        expect(screen.getAllByText("4")).toHaveLength(2);
       },
       { timeout: 3000 },
     );

@@ -88,14 +88,16 @@ describe("Testimonials — core content (Req 6.1)", () => {
     mockMatchMedia(reducedMotionMatcher);
     await renderTestimonials([makeTestimonial(1)]);
     expect(
-      screen.getByRole("region", { name: /what people say/i }),
+      screen.getByRole("region", { name: /professional references/i }),
     ).toBeInTheDocument();
   });
 
   it("renders an empty state when there are no testimonials", async () => {
     mockMatchMedia(reducedMotionMatcher);
     await renderTestimonials([]);
-    expect(screen.getByText(/testimonials coming soon/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/references available on request/i),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("figure")).not.toBeInTheDocument();
   });
 });

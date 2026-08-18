@@ -22,6 +22,11 @@ export const SKILLS_EYEBROW = "Capabilities";
 /** Default section heading. */
 export const SKILLS_HEADING = "Skills & Expertise";
 
+export const PROFILE_SUMMARY =
+  "Backend / Full Stack Engineer and freelancer with approximately 6 years of experience delivering enterprise applications, modern web products, and rapid MVPs. Specialized in Java, Spring Boot, microservices, system integration, and Azure DevOps, with hands-on React, Next.js, TypeScript, AI-assisted prototyping, and Vercel delivery.";
+
+export const PROFILE_EXPERIENCE_YEARS = 6;
+
 /**
  * The four skill categories in their public display order (Requirement 4.1).
  * The order is intentional — Frontend first, then Backend, Cloud, and AI — and
@@ -29,18 +34,29 @@ export const SKILLS_HEADING = "Skills & Expertise";
  * always appear.
  */
 export const SKILL_CATEGORY_ORDER: readonly SkillCategory[] = [
-  SkillCategory.FRONTEND,
   SkillCategory.BACKEND,
   SkillCategory.CLOUD,
+  SkillCategory.FRONTEND,
   SkillCategory.AI,
 ];
 
 /** Human-readable labels for each {@link SkillCategory}. */
 export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
-  [SkillCategory.FRONTEND]: "Frontend",
-  [SkillCategory.BACKEND]: "Backend",
-  [SkillCategory.CLOUD]: "Cloud",
-  [SkillCategory.AI]: "AI",
+  [SkillCategory.FRONTEND]: "Frontend Development",
+  [SkillCategory.BACKEND]: "Backend Engineering",
+  [SkillCategory.CLOUD]: "Cloud & DevOps",
+  [SkillCategory.AI]: "AI-Assisted Development & Delivery",
+};
+
+export const SKILL_CATEGORY_DESCRIPTIONS: Record<SkillCategory, string> = {
+  [SkillCategory.BACKEND]:
+    "Enterprise services, integrations, testing, and scalable architecture.",
+  [SkillCategory.CLOUD]:
+    "Automated delivery, cloud platforms, and production observability.",
+  [SkillCategory.FRONTEND]:
+    "Responsive, accessible interfaces connected to robust backend systems.",
+  [SkillCategory.AI]:
+    "AI-accelerated prototyping, product delivery, and collaborative engineering tools.",
 };
 
 /** A category paired with its label and the skills that belong to it. */

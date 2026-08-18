@@ -132,7 +132,11 @@ describe("FeaturedProjects — link integrity (Property 2; Req 3.3)", () => {
       makeProject(3),
     ]);
     const card = screen.getByRole("article", { name: /project 1/i });
-    expect(within(card).queryAllByRole("link")).toHaveLength(0);
+    expect(
+      within(card)
+        .queryAllByRole("link")
+        .filter((link) => link.getAttribute("target") === "_blank"),
+    ).toHaveLength(0);
   });
 
   it("treats whitespace-only URLs as absent", async () => {
@@ -142,7 +146,11 @@ describe("FeaturedProjects — link integrity (Property 2; Req 3.3)", () => {
       makeProject(3),
     ]);
     const card = screen.getByRole("article", { name: /project 1/i });
-    expect(within(card).queryAllByRole("link")).toHaveLength(0);
+    expect(
+      within(card)
+        .queryAllByRole("link")
+        .filter((link) => link.getAttribute("target") === "_blank"),
+    ).toHaveLength(0);
   });
 });
 

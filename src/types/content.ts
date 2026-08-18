@@ -7,6 +7,7 @@ import type {
   Testimonial,
   ContactSubmission,
 } from "@prisma/client";
+import { decodeProjectImages } from "@/features/projects/media";
 
 /**
  * Serializable view DTOs for content rendered by public Server Components.
@@ -27,6 +28,8 @@ export interface ProjectView {
   solution: string;
   impact: string;
   technologies: string[];
+  /** Ordered project gallery; the first image is used as the card cover. */
+  imageUrls?: string[];
   thumbnailUrl?: string;
   githubUrl?: string;
   liveUrl?: string;
@@ -131,6 +134,8 @@ export function toSkillView(skill: Skill): SkillView {
 
 /** Map a Prisma `Project` row to its serializable view DTO. */
 export function toProjectView(project: Project): ProjectView {
+  const imageUrls = decodeProjectImages(project.thumbnailUrl);
+
   return {
     id: project.id,
     title: project.title,
@@ -140,7 +145,8 @@ export function toProjectView(project: Project): ProjectView {
     solution: project.solution,
     impact: project.impact,
     technologies: project.technologies,
-    thumbnailUrl: project.thumbnailUrl ?? undefined,
+    imageUrls,
+    thumbnailUrl: imageUrls[0],
     githubUrl: project.githubUrl ?? undefined,
     liveUrl: project.liveUrl ?? undefined,
     featured: project.featured,

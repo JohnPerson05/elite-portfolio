@@ -25,16 +25,16 @@ describe("groupSkills (Req 4.1)", () => {
   it("always returns the four categories in canonical order", () => {
     const groups = groupSkills([]);
     expect(groups.map((g) => g.category)).toEqual([
-      SkillCategory.FRONTEND,
       SkillCategory.BACKEND,
       SkillCategory.CLOUD,
+      SkillCategory.FRONTEND,
       SkillCategory.AI,
     ]);
     expect(groups.map((g) => g.label)).toEqual([
-      "Frontend",
-      "Backend",
-      "Cloud",
-      "AI",
+      "Backend Engineering",
+      "Cloud & DevOps",
+      "Frontend Development",
+      "AI-Assisted Development & Delivery",
     ]);
   });
 

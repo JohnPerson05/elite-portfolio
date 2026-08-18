@@ -1,10 +1,14 @@
+import Link from "next/link";
 import { FadeUp, Stagger } from "@/components/motion";
 import { Card, EmptyState, SectionHeading } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { SkillView } from "@/types";
 import {
+  PROFILE_SUMMARY,
+  PROFILE_EXPERIENCE_YEARS,
   SKILLS_EYEBROW,
   SKILLS_HEADING,
+  SKILL_CATEGORY_DESCRIPTIONS,
   groupSkills,
 } from "./config";
 import { getSkills } from "./data";
@@ -23,6 +27,8 @@ export interface SkillsProps {
   eyebrow?: string;
   /** Section heading text. */
   heading?: string;
+  /** Show the homepage link to the dedicated capabilities page. */
+  showDetailLink?: boolean;
   className?: string;
 }
 
@@ -52,6 +58,7 @@ export async function Skills({
   skills,
   eyebrow = SKILLS_EYEBROW,
   heading = SKILLS_HEADING,
+  showDetailLink = true,
   className,
 }: SkillsProps) {
   const source = skills ?? (await getSkills());
@@ -78,59 +85,125 @@ export async function Skills({
         />
 
         {hasAnySkill ? (
-          <Stagger
-            as="ul"
-            className={cn(
-              "grid grid-cols-1 gap-space-3 sm:gap-space-4",
-              "md:grid-cols-2",
-            )}
-          >
-            {groups.map((group) => {
-              const groupHeadingId = `skills-${group.category.toLowerCase()}-heading`;
-              return (
-                <FadeUp
-                  as="li"
-                  key={group.category}
-                  className="h-full list-none"
-                >
-                  <Card
-                    as="section"
-                    aria-labelledby={groupHeadingId}
-                    className="flex h-full flex-col gap-space-4 p-space-4"
+          <>
+            <FadeUp>
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0a0d10] p-space-4 sm:p-space-6">
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-cover bg-center opacity-25"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(90deg, #0a0d10 15%, transparent), url('/images/enterprise-grid-background.svg')",
+                  }}
+                />
+                <div className="relative grid gap-space-6 lg:grid-cols-[1fr_auto] lg:items-end">
+                  <div>
+                    <div className="flex items-center gap-space-2 font-mono text-caption uppercase tracking-[0.18em] text-accent">
+                      <span className="status-pulse h-2 w-2 rounded-full bg-emerald-400" />
+                      Professional profile
+                    </div>
+                    <p className="mt-space-3 max-w-4xl text-pretty text-body-lg leading-relaxed text-text">
+                      {PROFILE_SUMMARY}
+                    </p>
+                  </div>
+                  <dl className="grid grid-cols-2 gap-space-2">
+                    <div className="rounded-lg border border-white/10 bg-black/20 px-space-3 py-space-2 backdrop-blur">
+                      <dt className="font-mono text-[0.6rem] uppercase tracking-wider text-muted">
+                        Experience
+                      </dt>
+                      <dd className="text-signal mt-1 font-display text-h3 font-semibold">
+                        {PROFILE_EXPERIENCE_YEARS} years
+                      </dd>
+                    </div>
+                    <div className="rounded-lg border border-white/10 bg-black/20 px-space-3 py-space-2 backdrop-blur">
+                      <dt className="font-mono text-[0.6rem] uppercase tracking-wider text-muted">
+                        Focus
+                      </dt>
+                      <dd className="mt-1 font-display text-h3 font-semibold text-text">
+                        Enterprise
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            </FadeUp>
+
+            <Stagger
+              as="ul"
+              className="grid grid-cols-1 gap-space-4 lg:grid-cols-2"
+            >
+              {groups.map((group, groupIndex) => {
+                const groupHeadingId = `skills-${group.category.toLowerCase()}-heading`;
+                return (
+                  <FadeUp
+                    as="li"
+                    key={group.category}
+                    className="h-full list-none"
                   >
-                    <h3
-                      id={groupHeadingId}
-                      className="font-display text-h3 font-semibold tracking-tight text-text"
+                    <Card
+                      as="section"
+                      aria-labelledby={groupHeadingId}
+                      className="relative flex h-full flex-col overflow-hidden p-space-4"
                     >
-                      {group.label}
-                    </h3>
-                    {group.skills.length > 0 ? (
-                      <ul className="flex flex-col gap-space-3">
-                        {group.skills.map((skill) => (
-                          <li key={skill.id}>
-                            <ProficiencyBar
-                              name={skill.name}
-                              proficiency={skill.proficiency}
-                            />
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="font-sans text-body text-muted">
-                        Coming soon.
-                      </p>
-                    )}
-                  </Card>
-                </FadeUp>
-              );
-            })}
-          </Stagger>
+                      <div className="absolute right-space-3 top-space-2 font-mono text-hero font-semibold text-white/[0.025]">
+                        0{groupIndex + 1}
+                      </div>
+                      <header className="relative mb-space-4 flex items-start gap-space-3 border-b border-hairline pb-space-3">
+                        <span className="border-accent/20 bg-accent/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border font-mono text-caption font-semibold text-accent">
+                          0{groupIndex + 1}
+                        </span>
+                        <div>
+                          <h3
+                            id={groupHeadingId}
+                            className="font-display text-h3 font-semibold tracking-tight text-text"
+                          >
+                            {group.label}
+                          </h3>
+                          <p className="mt-1 max-w-md text-pretty text-caption text-muted">
+                            {SKILL_CATEGORY_DESCRIPTIONS[group.category]}
+                          </p>
+                        </div>
+                        <span className="px-space-1.5 ml-auto shrink-0 rounded-full border border-white/10 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-muted">
+                          {group.skills.length} skills
+                        </span>
+                      </header>
+
+                      {group.skills.length > 0 ? (
+                        <ul className="relative grid gap-space-2 sm:grid-cols-2">
+                          {group.skills.map((skill) => (
+                            <li key={skill.id}>
+                              <ProficiencyBar
+                                name={skill.name}
+                                proficiency={skill.proficiency}
+                              />
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="font-sans text-body text-muted">
+                          Coming soon.
+                        </p>
+                      )}
+                    </Card>
+                  </FadeUp>
+                );
+              })}
+            </Stagger>
+          </>
         ) : (
           <EmptyState
             title="Skills coming soon"
             description="Technical skills will appear here once they're published."
           />
         )}
+        {showDetailLink ? (
+          <Link
+            href="/skills"
+            className="mx-auto inline-flex min-h-11 items-center font-mono text-caption uppercase tracking-widest text-accent transition-colors hover:text-text"
+          >
+            View the capability matrix&nbsp; →
+          </Link>
+        ) : null}
       </div>
     </section>
   );

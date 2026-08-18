@@ -46,6 +46,17 @@ describe("projectSchema — valid input", () => {
       expect(result.data.liveUrl).toBeUndefined();
     }
   });
+
+  it("accepts ordered remote and local project images", () => {
+    const result = projectSchema.safeParse({
+      ...validInput,
+      imageUrls: [
+        "https://example.com/cover.webp",
+        "/images/project-detail.webp",
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
 });
 
 describe("projectSchema — invalid input (Requirement 10.4)", () => {
@@ -68,6 +79,15 @@ describe("projectSchema — invalid input (Requirement 10.4)", () => {
     ).toBe(false);
   });
 
+  it("rejects malformed project image URLs", () => {
+    expect(
+      projectSchema.safeParse({
+        ...validInput,
+        imageUrls: ["not-an-image-location"],
+      }).success,
+    ).toBe(false);
+  });
+
   it("rejects an empty technologies array", () => {
     expect(
       projectSchema.safeParse({ ...validInput, technologies: [] }).success,
@@ -82,14 +102,14 @@ describe("projectSchema — invalid input (Requirement 10.4)", () => {
   });
 
   it("rejects a negative order", () => {
-    expect(
-      projectSchema.safeParse({ ...validInput, order: -1 }).success,
-    ).toBe(false);
+    expect(projectSchema.safeParse({ ...validInput, order: -1 }).success).toBe(
+      false,
+    );
   });
 
   it("accepts order at the lower boundary (0)", () => {
-    expect(
-      projectSchema.safeParse({ ...validInput, order: 0 }).success,
-    ).toBe(true);
+    expect(projectSchema.safeParse({ ...validInput, order: 0 }).success).toBe(
+      true,
+    );
   });
 });

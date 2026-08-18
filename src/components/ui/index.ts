@@ -11,6 +11,9 @@ export type { CardProps, CardHover } from "./Card";
 export { SectionHeading } from "./SectionHeading";
 export type { SectionHeadingProps, HeadingLevel } from "./SectionHeading";
 
+export { PageHero } from "./PageHero";
+export type { PageHeroProps } from "./PageHero";
+
 export { Badge, Tag } from "./Badge";
 export type { BadgeProps, BadgeVariant, TagProps } from "./Badge";
 
@@ -26,12 +29,7 @@ export type { FieldProps, FieldControlProps } from "./Field";
 export { EmptyState } from "./EmptyState";
 export type { EmptyStateProps } from "./EmptyState";
 
-export {
-  Toast,
-  ToastProvider,
-  ToastRegion,
-  useToast,
-} from "./Toast";
+export { Toast, ToastProvider, ToastRegion, useToast } from "./Toast";
 export type {
   ToastProps,
   ToastVariant,

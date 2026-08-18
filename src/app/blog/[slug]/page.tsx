@@ -1,28 +1,31 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Article, getPublishedPostBySlug } from "@/features/blog";
+import {
+  blogPostingJsonLd,
+  createPageMetadata,
+  serializeJsonLd,
+} from "@/lib/seo";
 
 interface BlogArticlePageProps {
   /** Route params. In Next.js 15 `params` is async and must be awaited. */
   params: Promise<{ slug: string }>;
 }
 
-/**
- * Minimal per-article metadata derived from the published post. Returns the
- * default title for a missing/unpublished slug (the page itself renders the
- * 404). Full SEO — Open Graph, Twitter cards, and `BlogPosting` JSON-LD — lands
- * in Task 26.
- */
 export async function generateMetadata({
   params,
 }: BlogArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPublishedPostBySlug(slug);
   if (!post) return {};
-  return {
+
+  return createPageMetadata({
     title: post.title,
     description: post.excerpt,
-  };
+    path: `/blog/${post.slug}`,
+    image: post.coverUrl,
+    type: "article",
+  });
 }
 
 /**
@@ -47,5 +50,15 @@ export default async function BlogArticlePage({
     notFound();
   }
 
-  return <Article post={post} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(blogPostingJsonLd(post)),
+        }}
+      />
+      <Article post={post} />
+    </>
+  );
 }

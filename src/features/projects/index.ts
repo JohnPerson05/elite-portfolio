@@ -4,9 +4,13 @@ export { FeaturedProjects } from "./FeaturedProjects";
 export type { FeaturedProjectsProps } from "./FeaturedProjects";
 export { ProjectCard } from "./ProjectCard";
 export type { ProjectCardProps } from "./ProjectCard";
+export { ProjectVisual } from "./ProjectVisual";
+export type { ProjectVisualProps } from "./ProjectVisual";
+export { ProjectGallery } from "./ProjectGallery";
+export type { ProjectGalleryProps } from "./ProjectGallery";
 export { ProjectLink } from "./ProjectLink";
 export type { ProjectLinkProps } from "./ProjectLink";
-export { getFeaturedProjects } from "./data";
+export { getFeaturedProjects, getProjectBySlug, getProjects } from "./data";
 export {
   selectFeatured,
   hasLink,

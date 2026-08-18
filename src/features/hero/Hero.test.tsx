@@ -16,16 +16,14 @@ describe("Hero", () => {
   it("renders the role and value proposition (Req 1.1)", () => {
     render(<Hero />);
     expect(screen.getByText(HERO_CONTENT.role)).toBeInTheDocument();
-    expect(
-      screen.getByText(HERO_CONTENT.valueProposition),
-    ).toBeInTheDocument();
+    expect(screen.getByText(HERO_CONTENT.valueProposition)).toBeInTheDocument();
   });
 
   it("renders all three CTAs with the correct targets (Req 1.2, 1.4, 1.5, 1.6)", () => {
     render(<Hero />);
 
     const viewProjects = screen.getByRole("link", { name: /view projects/i });
-    expect(viewProjects).toHaveAttribute("href", "#projects");
+    expect(viewProjects).toHaveAttribute("href", "/projects");
 
     const downloadResume = screen.getByRole("link", {
       name: /download resume/i,
@@ -33,7 +31,7 @@ describe("Hero", () => {
     expect(downloadResume).toHaveAttribute("href", "/resume");
 
     const contactMe = screen.getByRole("link", { name: /contact me/i });
-    expect(contactMe).toHaveAttribute("href", "#contact");
+    expect(contactMe).toHaveAttribute("href", "/contact");
   });
 
   it("renders the avatar image with non-empty alt text (Req 1.1, 15.3)", () => {
@@ -64,9 +62,7 @@ describe("Hero", () => {
       screen.getByText("Building reliable systems at scale."),
     ).toBeInTheDocument();
     // Avatar alt tracks the provided name.
-    expect(
-      screen.getByRole("img", { name: "Jordan Lee" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Jordan Lee" })).toBeInTheDocument();
   });
 
   it("renders optional secondary links when provided", () => {

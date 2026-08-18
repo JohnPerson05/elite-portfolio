@@ -4,6 +4,7 @@ import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { HERO_CONTENT, type HeroContent, type HeroLink } from "./config";
 import { MagneticCta } from "./MagneticCta";
+import { InteractiveSystemPanel } from "./InteractiveSystemPanel";
 
 /**
  * Props for {@link Hero}. Every field is optional and falls back to
@@ -76,39 +77,71 @@ export function Hero(props: HeroProps) {
       id="top"
       aria-labelledby={headingId}
       className={cn(
-        // Fill the viewport minus the sticky navbar (h-16 = 4rem).
-        "relative flex min-h-[calc(100svh-4rem)] w-full items-center",
-        "px-space-2 py-space-12 sm:px-space-4",
+        "relative flex min-h-[calc(100svh-4rem)] w-full items-center overflow-hidden",
+        "px-space-2 py-space-10 sm:px-space-4 sm:py-space-12",
         props.className,
       )}
     >
+      <div aria-hidden="true" className="absolute inset-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30"
+          style={{
+            backgroundImage:
+              "linear-gradient(90deg, var(--bg) 5%, transparent 52%), url('/images/enterprise-grid-background.svg')",
+          }}
+        />
+        <div className="programmatic-grid absolute inset-0 opacity-50" />
+        <div className="from-bg/20 absolute inset-0 bg-gradient-to-b via-transparent to-bg" />
+      </div>
+      <div
+        aria-hidden="true"
+        className="absolute left-[-15rem] top-1/4 h-[30rem] w-[30rem] rounded-full bg-[var(--accent-cool)] opacity-[0.035] blur-3xl"
+      />
       <Stagger
         className={cn(
-          "mx-auto grid w-full max-w-content items-center gap-space-8",
-          "lg:grid-cols-[1.25fr_1fr]",
+          "relative mx-auto grid w-full max-w-content items-center gap-space-10",
+          "lg:grid-cols-[minmax(0,1fr)_minmax(28rem,0.88fr)]",
         )}
       >
-        {/* Copy + CTAs. Order-2 on mobile keeps the avatar on top when stacked. */}
-        <div className="flex flex-col items-start gap-space-3 lg:order-1">
+        <div className="flex flex-col items-start gap-space-3">
           <FadeUp>
-            <p className="font-sans text-caption font-medium uppercase tracking-widest text-accent">
-              {content.role}
-            </p>
+            <div className="flex items-center gap-space-2 rounded-full border border-white/10 bg-white/[0.03] px-space-2 py-space-1">
+              <span className="status-pulse h-2 w-2 rounded-full bg-emerald-400" />
+              <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted">
+                <span>{content.role}</span>
+                <span aria-hidden="true"> · </span>
+                <span>Freelance engagements</span>
+              </p>
+            </div>
           </FadeUp>
 
           <FadeUp>
             <h1
               id={headingId}
-              className="font-display text-hero font-bold tracking-tight text-text text-balance"
+              className="text-signal text-balance font-display text-hero font-semibold tracking-[-0.055em]"
             >
               {content.name}
             </h1>
           </FadeUp>
 
           <FadeUp>
-            <p className="max-w-content font-sans text-body-lg text-muted text-pretty">
+            <p className="max-w-2xl text-pretty font-sans text-body-lg leading-relaxed text-muted">
               {content.valueProposition}
             </p>
+          </FadeUp>
+
+          <FadeUp>
+            <div className="flex flex-wrap items-center gap-x-space-3 gap-y-space-1 font-mono text-caption uppercase tracking-wider text-muted">
+              <span className="text-text">Backend systems</span>
+              <span aria-hidden="true" className="text-accent">
+                /
+              </span>
+              <span className="text-text">Full-stack delivery</span>
+              <span aria-hidden="true" className="text-accent">
+                /
+              </span>
+              <span className="text-text">MVP prototyping</span>
+            </div>
           </FadeUp>
 
           {/* Three primary CTAs (Req 1.2). Wrap so they stack cleanly on
@@ -153,19 +186,28 @@ export function Hero(props: HeroProps) {
           ) : null}
         </div>
 
-        {/* Professional avatar. Priority + explicit dimensions for a stable
-            LCP with no layout shift (Req 1.1, 15.3). */}
-        <FadeUp className="lg:order-2">
-          <div className="relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-2xl border border-hairline bg-card">
-            <Image
-              src={content.avatarUrl}
-              alt={content.name}
-              width={640}
-              height={640}
-              priority
-              sizes="(max-width: 1024px) 80vw, 33vw"
-              className="h-full w-full object-cover"
-            />
+        <FadeUp>
+          <div className="relative">
+            <InteractiveSystemPanel />
+            <div className="p-space-1.5 absolute -bottom-5 left-space-3 flex items-center gap-space-2 rounded-xl border border-white/10 bg-[#0c0d10]/95 pr-space-3 shadow-xl backdrop-blur-md sm:left-auto sm:right-space-3">
+              <Image
+                src={content.avatarUrl}
+                alt={content.name}
+                width={44}
+                height={44}
+                priority
+                sizes="44px"
+                className="h-11 w-11 rounded-lg object-cover"
+              />
+              <div>
+                <p className="font-mono text-[0.65rem] uppercase tracking-wider text-muted">
+                  Engineering focus
+                </p>
+                <p className="text-caption font-medium text-text">
+                  Enterprise systems &amp; MVPs
+                </p>
+              </div>
+            </div>
           </div>
         </FadeUp>
       </Stagger>

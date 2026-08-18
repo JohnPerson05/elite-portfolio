@@ -3,11 +3,7 @@
 import { useInView } from "@/hooks/useInView";
 import { useCounter } from "@/hooks/useCounter";
 import { cn } from "@/lib/utils";
-import {
-  MAX_PROFICIENCY,
-  MIN_PROFICIENCY,
-  clampProficiency,
-} from "./config";
+import { MAX_PROFICIENCY, MIN_PROFICIENCY, clampProficiency } from "./config";
 
 export interface ProficiencyBarProps {
   /** Skill name shown as the bar's label and used for its accessible name. */
@@ -42,15 +38,29 @@ export function ProficiencyBar({
   const target = clampProficiency(proficiency);
   const { ref, inView } = useInView<HTMLDivElement>({ once: true });
   const display = useCounter({ target, active: inView });
+  const level =
+    target >= 92 ? "Expert" : target >= 86 ? "Advanced" : "Proficient";
 
   return (
-    <div ref={ref} className={cn("flex flex-col gap-space-1", className)}>
-      <div className="flex items-baseline justify-between gap-space-2">
-        <span className="font-sans text-body font-medium text-text">
-          {name}
-        </span>
-        <span className="font-sans text-caption tabular-nums text-muted">
-          {display}%
+    <div
+      ref={ref}
+      className={cn(
+        "group/skill hover:border-accent/30 relative overflow-hidden rounded-lg border border-white/[0.07] bg-white/[0.025] p-space-2 transition-colors hover:bg-white/[0.045]",
+        className,
+      )}
+    >
+      <div className="flex items-start justify-between gap-space-2">
+        <div className="flex min-w-0 items-center gap-space-2">
+          <span
+            aria-hidden="true"
+            className="h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_12px_rgba(212,175,55,0.45)]"
+          />
+          <span className="truncate font-sans text-caption font-medium text-text">
+            {name}
+          </span>
+        </div>
+        <span className="shrink-0 font-mono text-[0.58rem] uppercase tracking-wider text-muted">
+          {level}
         </span>
       </div>
       <div
@@ -59,13 +69,14 @@ export function ProficiencyBar({
         aria-valuenow={target}
         aria-valuemin={MIN_PROFICIENCY}
         aria-valuemax={MAX_PROFICIENCY}
-        className="h-2 w-full overflow-hidden rounded-full border border-hairline bg-bg-secondary"
+        className="mt-space-2 h-px w-full overflow-hidden bg-white/10"
       >
         <div
-          className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out motion-reduce:transition-none"
+          className="h-full bg-gradient-to-r from-accent to-[var(--accent-cool)] transition-[width] duration-500 ease-out motion-reduce:transition-none"
           style={{ width: `${display}%` }}
         />
       </div>
+      <span className="sr-only">{display}%</span>
     </div>
   );
 }

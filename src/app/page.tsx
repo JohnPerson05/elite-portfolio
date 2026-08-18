@@ -1,5 +1,6 @@
+import type { Metadata } from "next";
 import { PageViewTracker } from "@/components/analytics";
-import { Hero } from "@/features/hero";
+import { CapabilityTicker, Hero } from "@/features/hero";
 import { TrustStats } from "@/features/trust";
 import { FeaturedProjects } from "@/features/projects";
 import { Skills } from "@/features/skills";
@@ -7,6 +8,18 @@ import { Timeline } from "@/features/experience";
 import { Testimonials } from "@/features/testimonials";
 import { BlogPreview } from "@/features/blog";
 import { ContactForm } from "@/features/contact";
+import {
+  createPageMetadata,
+  personJsonLd,
+  serializeJsonLd,
+  siteConfig,
+} from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: siteConfig.title,
+  description: siteConfig.description,
+  path: "/",
+});
 
 /**
  * Homepage — the full recruiter-optimized composition of every public feature
@@ -37,9 +50,14 @@ import { ContactForm } from "@/features/contact";
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(personJsonLd()) }}
+      />
       <PageViewTracker path="/" />
 
       <Hero />
+      <CapabilityTicker />
       <TrustStats />
       <FeaturedProjects />
       <Skills />

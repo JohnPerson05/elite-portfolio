@@ -54,6 +54,7 @@ describe("toProjectView", () => {
     expect(view.githubUrl).toBeUndefined();
     expect(view.liveUrl).toBeUndefined();
     expect(view.technologies).toEqual(["Next.js"]);
+    expect(view.imageUrls).toEqual([]);
   });
 
   it("preserves present URL fields", () => {
@@ -62,6 +63,19 @@ describe("toProjectView", () => {
       githubUrl: "https://github.com/x",
     });
     expect(view.githubUrl).toBe("https://github.com/x");
+  });
+
+  it("decodes an ordered project gallery and uses its first image as cover", () => {
+    const view = toProjectView({
+      ...baseProject,
+      thumbnailUrl:
+        'portfolio-gallery:["https://example.com/cover.webp","https://example.com/detail.webp"]',
+    });
+    expect(view.imageUrls).toEqual([
+      "https://example.com/cover.webp",
+      "https://example.com/detail.webp",
+    ]);
+    expect(view.thumbnailUrl).toBe("https://example.com/cover.webp");
   });
 });
 

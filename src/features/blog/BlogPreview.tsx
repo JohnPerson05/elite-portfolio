@@ -66,7 +66,7 @@ export async function BlogPreview({
       id="blog"
       aria-labelledby={headingId}
       className={cn(
-        "w-full bg-bg-secondary px-space-2 py-section sm:px-space-4",
+        "w-full bg-bg px-space-2 py-section sm:px-space-4",
         className,
       )}
     >
@@ -99,7 +99,7 @@ export async function BlogPreview({
               href="/blog"
               className={cn(
                 "mx-auto inline-flex min-h-11 items-center rounded-md px-space-2 font-sans text-body font-medium text-accent no-underline",
-                "transition-colors hover:text-accent/80",
+                "hover:text-accent/80 transition-colors",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
               )}
             >

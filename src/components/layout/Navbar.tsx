@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { MobileNav } from "./MobileNav";
@@ -53,22 +54,25 @@ export function Navbar({ className }: NavbarProps) {
         aria-label="Primary"
         className="mx-auto flex h-16 w-full max-w-content items-center justify-between gap-space-3 px-space-2 sm:px-space-4"
       >
-        <a
-          href="#top"
+        <Link
+          href="/"
           className={cn(
             "shrink-0 rounded-md font-display text-body-lg font-semibold tracking-tight text-text",
             "transition-colors hover:text-accent",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
           )}
         >
-          {BRAND_NAME}
-        </a>
+          <span>{BRAND_NAME}</span>
+          <span aria-hidden="true" className="ml-1 text-accent">
+            /
+          </span>
+        </Link>
 
         {/* Desktop inline links — hidden on small screens. */}
         <ul className="hidden items-center gap-space-1 md:flex">
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
-              <a
+              <Link
                 href={link.href}
                 className={cn(
                   "inline-flex min-h-11 items-center rounded-md px-space-2 text-body text-muted",
@@ -77,7 +81,7 @@ export function Navbar({ className }: NavbarProps) {
                 )}
               >
                 {link.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

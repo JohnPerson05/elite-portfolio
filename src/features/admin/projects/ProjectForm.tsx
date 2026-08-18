@@ -1,14 +1,15 @@
 "use client";
 
-import {
-  useId,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
+import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import { Button, Field, Input, SectionHeading, Textarea } from "@/components/ui";
+import {
+  Button,
+  Field,
+  Input,
+  SectionHeading,
+  Textarea,
+} from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { ActionResult, FieldErrors, ProjectView } from "@/types";
 import { createProject, updateProject } from "@/actions/projects";
@@ -33,7 +34,7 @@ interface ProjectFormValues {
   impact: string;
   /** Comma-separated technologies; split into an array on submit. */
   technologies: string;
-  thumbnailUrl: string;
+  imageUrls: string[];
   githubUrl: string;
   liveUrl: string;
   featured: boolean;
@@ -51,7 +52,7 @@ const EMPTY_VALUES: ProjectFormValues = {
   solution: "",
   impact: "",
   technologies: "",
-  thumbnailUrl: "",
+  imageUrls: [""],
   githubUrl: "",
   liveUrl: "",
   featured: false,
@@ -68,7 +69,12 @@ function valuesFromProject(project: ProjectView): ProjectFormValues {
     solution: project.solution,
     impact: project.impact,
     technologies: project.technologies.join(", "),
-    thumbnailUrl: project.thumbnailUrl ?? "",
+    imageUrls:
+      project.imageUrls && project.imageUrls.length > 0
+        ? project.imageUrls
+        : project.thumbnailUrl
+          ? [project.thumbnailUrl]
+          : [""],
     githubUrl: project.githubUrl ?? "",
     liveUrl: project.liveUrl ?? "",
     featured: project.featured,
@@ -88,7 +94,7 @@ function toFieldErrors(source: FieldErrors | undefined): ProjectFieldErrors {
     "solution",
     "impact",
     "technologies",
-    "thumbnailUrl",
+    "imageUrls",
     "githubUrl",
     "liveUrl",
     "order",
@@ -141,9 +147,7 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
   ) => {
     const { name, value, type } = event.target;
     const nextValue =
-      type === "checkbox"
-        ? (event.target as HTMLInputElement).checked
-        : value;
+      type === "checkbox" ? (event.target as HTMLInputElement).checked : value;
     setValues((current) => ({ ...current, [name]: nextValue }));
     if (formError) setFormError(undefined);
     setFieldErrors((current) => {
@@ -151,6 +155,58 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
       const next = { ...current };
       delete next[name as keyof ProjectFormValues];
       return next;
+    });
+  };
+
+  const updateImageUrl = (index: number, value: string) => {
+    setValues((current) => ({
+      ...current,
+      imageUrls: current.imageUrls.map((url, imageIndex) =>
+        imageIndex === index ? value : url,
+      ),
+    }));
+    setFieldErrors((current) => {
+      if (!current.imageUrls) return current;
+      const next = { ...current };
+      delete next.imageUrls;
+      return next;
+    });
+  };
+
+  const addImageUrl = () => {
+    setValues((current) => ({
+      ...current,
+      imageUrls:
+        current.imageUrls.length < 12
+          ? [...current.imageUrls, ""]
+          : current.imageUrls,
+    }));
+  };
+
+  const removeImageUrl = (index: number) => {
+    setValues((current) => {
+      const next = current.imageUrls.filter(
+        (_url, imageIndex) => imageIndex !== index,
+      );
+      return { ...current, imageUrls: next.length > 0 ? next : [""] };
+    });
+  };
+
+  const moveImageUrl = (index: number, direction: -1 | 1) => {
+    setValues((current) => {
+      const destination = index + direction;
+      if (destination < 0 || destination >= current.imageUrls.length) {
+        return current;
+      }
+      const next = [...current.imageUrls];
+      const currentUrl = next[index];
+      const destinationUrl = next[destination];
+      if (currentUrl === undefined || destinationUrl === undefined) {
+        return current;
+      }
+      next[index] = destinationUrl;
+      next[destination] = currentUrl;
+      return { ...current, imageUrls: next };
     });
   };
 
@@ -168,7 +224,9 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
       solution: values.solution,
       impact: values.impact,
       technologies: parseTechnologies(values.technologies),
-      thumbnailUrl: values.thumbnailUrl,
+      imageUrls: values.imageUrls
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0),
       githubUrl: values.githubUrl,
       liveUrl: values.liveUrl,
       featured: values.featured,
@@ -314,18 +372,85 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
           )}
         </Field>
 
-        <Field label="Thumbnail URL" error={fieldErrors.thumbnailUrl}>
-          {(control) => (
-            <Input
-              {...control}
-              name="thumbnailUrl"
-              type="url"
-              placeholder="https://…"
-              value={values.thumbnailUrl}
-              onChange={handleChange}
-            />
-          )}
-        </Field>
+        <fieldset className="bg-card/40 rounded-xl border border-hairline p-space-3">
+          <legend className="px-space-1 font-sans text-body font-medium text-text">
+            Project images
+          </legend>
+          <p className="mb-space-3 text-caption leading-relaxed text-muted">
+            Add up to 12 image URLs. The first image is the cover shown on
+            project cards. Use the arrows to change the display order.
+          </p>
+
+          <div className="flex flex-col gap-space-3">
+            {values.imageUrls.map((url, index) => (
+              <div
+                key={`${index}-${values.imageUrls.length}`}
+                className="grid gap-space-2 rounded-lg border border-hairline p-space-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+              >
+                <Field
+                  label={`Image ${index + 1}${index === 0 ? " — cover" : ""}`}
+                  error={index === 0 ? fieldErrors.imageUrls : undefined}
+                >
+                  {(control) => (
+                    <Input
+                      {...control}
+                      type="text"
+                      inputMode="url"
+                      placeholder="https://… or /images/project.webp"
+                      value={url}
+                      onChange={(event) =>
+                        updateImageUrl(index, event.target.value)
+                      }
+                    />
+                  )}
+                </Field>
+
+                <div className="flex items-end gap-space-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={index === 0}
+                    onClick={() => moveImageUrl(index, -1)}
+                    aria-label={`Move image ${index + 1} up`}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={index === values.imageUrls.length - 1}
+                    onClick={() => moveImageUrl(index, 1)}
+                    aria-label={`Move image ${index + 1} down`}
+                  >
+                    ↓
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeImageUrl(index)}
+                    aria-label={`Remove image ${index + 1}`}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-space-3"
+            disabled={values.imageUrls.length >= 12}
+            onClick={addImageUrl}
+          >
+            + Add another image
+          </Button>
+        </fieldset>
 
         <Field label="GitHub URL" error={fieldErrors.githubUrl}>
           {(control) => (
@@ -393,7 +518,12 @@ export function ProjectForm({ project, className }: ProjectFormProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-space-2">
-          <Button type="submit" variant="primary" size="lg" disabled={submitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            disabled={submitting}
+          >
             {submitting
               ? PROJECT_SUBMITTING_LABEL
               : isEdit

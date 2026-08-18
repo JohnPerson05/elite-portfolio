@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { FadeUp, Stagger } from "@/components/motion";
 import { Card, EmptyState, SectionHeading } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ export interface TestimonialsProps {
   eyebrow?: string;
   /** Section heading text. */
   heading?: string;
+  showDetailLink?: boolean;
   className?: string;
 }
 
@@ -54,6 +56,7 @@ export async function Testimonials({
   testimonials,
   eyebrow = TESTIMONIALS_EYEBROW,
   heading = TESTIMONIALS_HEADING,
+  showDetailLink = true,
   className,
 }: TestimonialsProps) {
   const source = testimonials ?? (await getTestimonials());
@@ -103,7 +106,7 @@ export async function Testimonials({
                     aria-labelledby={authorId}
                     className="flex h-full flex-col gap-space-4 p-space-4"
                   >
-                    <blockquote className="font-sans text-body-lg text-text text-pretty">
+                    <blockquote className="text-pretty font-sans text-body-lg text-text">
                       <p>&ldquo;{testimonial.quote}&rdquo;</p>
                     </blockquote>
 
@@ -125,7 +128,7 @@ export async function Testimonials({
                         >
                           {testimonial.author}
                         </span>
-                        <span className="font-sans text-caption text-muted text-pretty">
+                        <span className="text-pretty font-sans text-caption text-muted">
                           {testimonial.company
                             ? `${testimonial.role}, ${testimonial.company}`
                             : testimonial.role}
@@ -153,10 +156,18 @@ export async function Testimonials({
           </Stagger>
         ) : (
           <EmptyState
-            title="Testimonials coming soon"
-            description="Endorsements will appear here once they're published."
+            title="References available on request"
+            description="Professional references can be shared privately for relevant roles and project conversations."
           />
         )}
+        {showDetailLink ? (
+          <Link
+            href="/testimonials"
+            className="mx-auto inline-flex min-h-11 items-center font-mono text-caption uppercase tracking-widest text-accent transition-colors hover:text-text"
+          >
+            Professional references&nbsp; →
+          </Link>
+        ) : null}
       </div>
     </section>
   );

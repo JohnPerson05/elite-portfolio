@@ -42,13 +42,13 @@ export interface HeroContent {
  * stable in-page anchors and the resume route.
  */
 export const HERO_CONTENT: HeroContent = {
-  name: "Alex Carter",
-  role: "Full Stack Developer",
+  name: "John Person Narral",
+  role: "Backend / Full Stack Engineer · Freelancer",
   valueProposition:
-    "Full Stack Developer crafting scalable products and beautiful digital experiences.",
-  avatarUrl: "/images/avatar.jpg",
-  projectsHref: "#projects",
+    "Backend-focused engineer with approximately 6 years of experience building enterprise and web applications, rapid MVPs, reusable product interfaces, and reliable cloud delivery.",
+  avatarUrl: "/images/john-person-narral.svg",
+  projectsHref: "/projects",
   resumeHref: "/resume",
-  contactHref: "#contact",
+  contactHref: "/contact",
   links: [],
 };

@@ -72,6 +72,10 @@ const config: Config = {
           "clamp(1.75rem, 1.4rem + 1.75vw, 3rem)",
           { lineHeight: "1.2", letterSpacing: "-0.02em" },
         ],
+        h1: [
+          "clamp(2.25rem, 1.65rem + 3vw, 4.5rem)",
+          { lineHeight: "1.08", letterSpacing: "-0.035em" },
+        ],
         // Hero / display
         hero: [
           "clamp(2.5rem, 1.6rem + 4.5vw, 5.5rem)",

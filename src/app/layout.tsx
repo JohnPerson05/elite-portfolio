@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { MotionProvider } from "@/components/motion";
 import { ToastProvider } from "@/components/ui";
 import {
   Footer,
+  NavigationLoader,
   Navbar,
   RouteTransition,
   ThemeBackground,
 } from "@/components/layout";
+import { getSiteUrl, siteConfig } from "@/lib/seo";
 import "./globals.css";
 
 // Self-hosted via next/font: fonts are downloaded at build time and served
@@ -30,9 +33,28 @@ const fontDisplay = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Elite Portfolio",
-  description:
-    "A premium portfolio showcasing elite engineering work. (Scaffold)",
+  metadataBase: getSiteUrl(),
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  authors: [{ name: siteConfig.name, url: getSiteUrl() }],
+  creator: siteConfig.name,
+  keywords: [
+    "full stack developer",
+    "Java developer",
+    "Spring Boot engineer",
+    "microservices",
+    "Azure DevOps",
+    "software engineer",
+    "web development",
+    "cloud architecture",
+    "MVP development",
+  ],
+  referrer: "origin-when-cross-origin",
+  category: "technology",
 };
 
 export default function RootLayout({
@@ -43,6 +65,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${fontSans.variable} ${fontDisplay.variable}`}
     >
       {/*
@@ -53,6 +76,9 @@ export default function RootLayout({
       <body className="overflow-x-hidden bg-bg text-text antialiased">
         <MotionProvider>
           <ToastProvider>
+            <Suspense fallback={null}>
+              <NavigationLoader />
+            </Suspense>
             {/* Decorative depth layer, fixed behind all content. */}
             <ThemeBackground />
 

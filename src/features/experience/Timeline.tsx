@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FadeUp, Stagger } from "@/components/motion";
 import { Card, EmptyState, SectionHeading } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -5,7 +6,7 @@ import type { ExperienceView } from "@/types";
 import {
   EXPERIENCE_EYEBROW,
   EXPERIENCE_HEADING,
-  formatDateRange,
+  getExperienceDateLabel,
   orderExperiences,
 } from "./config";
 import { getExperiences } from "./data";
@@ -23,6 +24,7 @@ export interface TimelineProps {
   eyebrow?: string;
   /** Section heading text. */
   heading?: string;
+  showDetailLink?: boolean;
   className?: string;
 }
 
@@ -54,6 +56,7 @@ export async function Timeline({
   experiences,
   eyebrow = EXPERIENCE_EYEBROW,
   heading = EXPERIENCE_HEADING,
+  showDetailLink = true,
   className,
 }: TimelineProps) {
   const source = experiences ?? (await getExperiences());
@@ -91,7 +94,13 @@ export async function Timeline({
           >
             {entries.map((entry) => {
               const titleId = `experience-${entry.id}-title`;
-              const dateRange = formatDateRange(entry.startDate, entry.endDate);
+              const dateRange = getExperienceDateLabel(entry);
+              const companyInitials = entry.company
+                .split(/\s+/)
+                .map((part) => part[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
               return (
                 <FadeUp as="li" key={entry.id} className="relative list-none">
                   {/* Timeline marker — decorative, sits on the rail. The rail
@@ -105,37 +114,53 @@ export async function Timeline({
                   <Card
                     as="article"
                     aria-labelledby={titleId}
-                    className="flex flex-col gap-space-3 p-space-4"
+                    hover="border"
+                    className="relative flex flex-col gap-space-4 overflow-hidden p-space-4 sm:p-space-5"
                   >
-                    <header className="flex flex-col gap-space-1">
-                      <h3
-                        id={titleId}
-                        className="font-display text-h3 font-semibold tracking-tight text-text text-balance"
-                      >
-                        {entry.position}
-                      </h3>
-                      <p className="font-sans text-body font-medium text-accent">
-                        {entry.company}
-                      </p>
-                      <p className="font-sans text-caption uppercase tracking-widest text-muted">
-                        {dateRange}
-                      </p>
+                    <div
+                      aria-hidden="true"
+                      className="programmatic-grid absolute inset-0 opacity-20"
+                    />
+                    <header className="relative flex items-start gap-space-3">
+                      <div className="border-accent/20 bg-accent/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border font-mono text-caption font-semibold text-accent">
+                        {companyInitials}
+                      </div>
+                      <div className="min-w-0">
+                        <h3
+                          id={titleId}
+                          className="text-balance font-display text-h3 font-semibold tracking-tight text-text"
+                        >
+                          {entry.position}
+                        </h3>
+                        <p className="font-sans text-body font-medium text-accent">
+                          {entry.company}
+                        </p>
+                        <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-widest text-muted">
+                          {dateRange}
+                        </p>
+                      </div>
+                      {entry.endDate === null ? (
+                        <span className="px-space-1.5 ml-auto flex shrink-0 items-center gap-space-1 rounded-full border border-emerald-400/20 bg-emerald-400/10 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-emerald-300">
+                          <span className="status-pulse h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                          Current
+                        </span>
+                      ) : null}
                     </header>
 
-                    <p className="font-sans text-body text-text text-pretty">
+                    <p className="border-accent/40 relative text-pretty border-l-2 pl-space-3 font-sans text-body text-text">
                       {entry.impact}
                     </p>
 
                     {entry.achievements.length > 0 ? (
-                      <div className="flex flex-col gap-space-1">
-                        <h4 className="font-sans text-caption font-medium uppercase tracking-widest text-muted">
-                          Key achievements
+                      <div className="relative flex flex-col gap-space-2">
+                        <h4 className="font-mono text-[0.65rem] font-medium uppercase tracking-widest text-muted">
+                          Selected contributions
                         </h4>
                         <ul className="flex list-disc flex-col gap-space-1 pl-space-4 marker:text-accent">
                           {entry.achievements.map((achievement) => (
                             <li
                               key={achievement}
-                              className="font-sans text-body text-muted text-pretty"
+                              className="text-pretty font-sans text-body text-muted"
                             >
                               {achievement}
                             </li>
@@ -154,6 +179,14 @@ export async function Timeline({
             description="Career history will appear here once it's published."
           />
         )}
+        {showDetailLink ? (
+          <Link
+            href="/experience"
+            className="mx-auto inline-flex min-h-11 items-center font-mono text-caption uppercase tracking-widest text-accent transition-colors hover:text-text"
+          >
+            Explore the full journey&nbsp; →
+          </Link>
+        ) : null}
       </div>
     </section>
   );

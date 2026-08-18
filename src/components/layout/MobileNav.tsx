@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { NAV_LINKS, PRIMARY_CTA } from "./navigation";
@@ -116,7 +117,7 @@ export function MobileNav({ className }: MobileNavProps) {
           <ul className="flex flex-col gap-space-1">
             {NAV_LINKS.map((link) => (
               <li key={link.href}>
-                <a
+                <Link
                   href={link.href}
                   onClick={close}
                   className={cn(
@@ -126,7 +127,7 @@ export function MobileNav({ className }: MobileNavProps) {
                   )}
                 >
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

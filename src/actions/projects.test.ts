@@ -155,9 +155,9 @@ describe("Auth guard everywhere — unauthenticated mutations are rejected (Prop
   it("reorderFeatured rejects and performs NO write when unauthenticated", async () => {
     makeUnauthenticated();
 
-    await expect(
-      reorderFeatured(["a", "b", "c"]),
-    ).rejects.toBeInstanceOf(RedirectError);
+    await expect(reorderFeatured(["a", "b", "c"])).rejects.toBeInstanceOf(
+      RedirectError,
+    );
 
     expect(mockedPrisma.$transaction).not.toHaveBeenCalled();
     expect(mockedRevalidate).not.toHaveBeenCalled();
@@ -193,7 +193,29 @@ describe("createProject — validated persistence (Req 10.1, 10.4)", () => {
     });
     // Reflect on the public homepage + admin list (Req 10.1).
     expect(mockedRevalidate).toHaveBeenCalledWith("/");
+    expect(mockedRevalidate).toHaveBeenCalledWith("/projects");
+    expect(mockedRevalidate).toHaveBeenCalledWith("/projects/[slug]", "page");
     expect(mockedRevalidate).toHaveBeenCalledWith("/admin/projects");
+  });
+
+  it("persists multiple project images in display order", async () => {
+    mockedPrisma.project.create.mockResolvedValueOnce({ id: "project_1" });
+
+    await createProject(
+      buildProjectInput({
+        imageUrls: [
+          "https://example.com/cover.webp",
+          "https://example.com/detail.webp",
+        ],
+      }),
+    );
+
+    expect(mockedPrisma.project.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        thumbnailUrl:
+          'portfolio-gallery:["https://example.com/cover.webp","https://example.com/detail.webp"]',
+      }),
+    });
   });
 
   it("returns fieldErrors and does NOT persist for invalid input (Req 10.4)", async () => {
@@ -218,7 +240,9 @@ describe("createProject — validated persistence (Req 10.1, 10.4)", () => {
         clientVersion: "6.x",
       }),
     );
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
 
     const result = await createProject(buildProjectInput());
 
@@ -247,7 +271,10 @@ describe("updateProject — edits reflect on the public site (Req 10.2, 10.4)", 
   });
 
   it("returns fieldErrors and does NOT persist for invalid input (Req 10.4)", async () => {
-    const result = await updateProject("project_1", buildProjectInput({ title: "   " }));
+    const result = await updateProject(
+      "project_1",
+      buildProjectInput({ title: "   " }),
+    );
 
     expect(result.success).toBe(false);
     if (result.success === false) {

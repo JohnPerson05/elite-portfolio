@@ -24,8 +24,16 @@ function makeSkill(
 /** One skill in each of the four categories. */
 function oneSkillPerCategory(): SkillView[] {
   return [
-    makeSkill(SkillCategory.FRONTEND, { id: "fe", name: "React", proficiency: 95 }),
-    makeSkill(SkillCategory.BACKEND, { id: "be", name: "Node.js", proficiency: 88 }),
+    makeSkill(SkillCategory.FRONTEND, {
+      id: "fe",
+      name: "React",
+      proficiency: 95,
+    }),
+    makeSkill(SkillCategory.BACKEND, {
+      id: "be",
+      name: "Node.js",
+      proficiency: 88,
+    }),
     makeSkill(SkillCategory.CLOUD, { id: "cl", name: "AWS", proficiency: 70 }),
     makeSkill(SkillCategory.AI, { id: "ai", name: "OpenAI", proficiency: 60 }),
   ];
@@ -69,14 +77,19 @@ describe("Skills — four-category grouping (Req 4.1)", () => {
     }
   });
 
-  it("renders category groups in the canonical Frontend→Backend→Cloud→AI order", async () => {
+  it("renders category groups in the backend-first canonical order", async () => {
     mockMatchMedia(reducedMotionMatcher);
     await renderSkills(oneSkillPerCategory());
 
     const headings = screen
       .getAllByRole("heading", { level: 3 })
       .map((h) => h.textContent);
-    expect(headings).toEqual(["Frontend", "Backend", "Cloud", "AI"]);
+    expect(headings).toEqual([
+      "Backend Engineering",
+      "Cloud & DevOps",
+      "Frontend Development",
+      "AI-Assisted Development & Delivery",
+    ]);
   });
 
   it("places each skill under its own category group", async () => {
@@ -85,8 +98,10 @@ describe("Skills — four-category grouping (Req 4.1)", () => {
 
     const frontend = screen.getByRole("region", { name: /frontend/i });
     expect(within(frontend).getByText("React")).toBeInTheDocument();
-    const ai = screen.getByRole("region", { name: /^ai/i });
-    expect(within(ai).getByText("OpenAI")).toBeInTheDocument();
+    const tools = screen.getByRole("region", {
+      name: /ai-assisted development & delivery/i,
+    });
+    expect(within(tools).getByText("OpenAI")).toBeInTheDocument();
   });
 
   it("exposes an accessible skills section landmark labelled by its heading", async () => {
@@ -120,7 +135,11 @@ describe("Skills — proficiency bars under reduced motion (Req 4.2, 4.4 / Prope
   it("sets the progressbar fill width to the target proficiency under reduced motion", async () => {
     mockMatchMedia(reducedMotionMatcher);
     await renderSkills([
-      makeSkill(SkillCategory.FRONTEND, { id: "fe", name: "React", proficiency: 95 }),
+      makeSkill(SkillCategory.FRONTEND, {
+        id: "fe",
+        name: "React",
+        proficiency: 95,
+      }),
     ]);
 
     const bar = screen.getByRole("progressbar", { name: /react proficiency/i });

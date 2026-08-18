@@ -1,9 +1,10 @@
-import Image from "next/image";
+import Link from "next/link";
 import { Card, Tag } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { ProjectView } from "@/types";
 import { hasLink } from "./config";
 import { ProjectLink } from "./ProjectLink";
+import { ProjectVisual } from "./ProjectVisual";
 
 export interface ProjectCardProps {
   /** The project to render. */
@@ -69,63 +70,33 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
       aria-labelledby={`project-${project.id}-title`}
       className={cn("flex h-full flex-col overflow-hidden", className)}
     >
-      {project.thumbnailUrl ? (
-        <div className="relative aspect-video w-full overflow-hidden border-b border-hairline bg-bg-secondary">
-          <Image
-            src={project.thumbnailUrl}
-            alt={`${project.title} preview`}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover"
-          />
-        </div>
-      ) : null}
+      <ProjectVisual
+        title={project.title}
+        thumbnailUrl={project.thumbnailUrl}
+        technologies={project.technologies}
+        href={`/projects/${project.slug}`}
+      />
 
-      <div className="flex flex-1 flex-col gap-space-3 p-space-4">
+      <div className="flex flex-1 flex-col gap-space-3 p-space-3 sm:p-space-4">
         <div className="flex flex-col gap-space-1">
           <h3
             id={`project-${project.id}-title`}
-            className="font-display text-h3 font-semibold tracking-tight text-text text-balance"
+            className="text-balance font-display text-h3 font-semibold tracking-tight text-text"
           >
-            {project.title}
+            <Link
+              href={`/projects/${project.slug}`}
+              className="transition-colors hover:text-accent"
+            >
+              {project.title}
+            </Link>
           </h3>
-          <p className="font-sans text-body text-muted text-pretty">
+          <p className="text-pretty font-sans text-body text-muted">
             {project.summary}
           </p>
         </div>
 
-        <dl className="flex flex-col gap-space-2">
-          <div>
-            <dt className="font-sans text-caption font-medium uppercase tracking-widest text-accent">
-              Problem
-            </dt>
-            <dd className="mt-0.5 font-sans text-body text-muted text-pretty">
-              {project.problem}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-sans text-caption font-medium uppercase tracking-widest text-accent">
-              Solution
-            </dt>
-            <dd className="mt-0.5 font-sans text-body text-muted text-pretty">
-              {project.solution}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-sans text-caption font-medium uppercase tracking-widest text-accent">
-              Impact
-            </dt>
-            <dd className="mt-0.5 font-sans text-body text-text text-pretty">
-              {project.impact}
-            </dd>
-          </div>
-        </dl>
-
         {project.technologies.length > 0 ? (
-          <ul
-            aria-label="Technologies"
-            className="flex flex-wrap gap-space-1"
-          >
+          <ul aria-label="Technologies" className="flex flex-wrap gap-space-1">
             {project.technologies.map((tech) => (
               <li key={tech}>
                 <Tag>{tech}</Tag>
@@ -134,29 +105,75 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
           </ul>
         ) : null}
 
-        {/* Conditional action links — pushed to the card footer. */}
-        {showGithub || showLive ? (
-          <div className="mt-auto flex flex-wrap items-center gap-space-4 pt-space-2">
-            {showGithub ? (
-              <ProjectLink
-                href={project.githubUrl as string}
-                projectId={project.id}
-                icon={<GitHubIcon />}
-              >
-                GitHub
-              </ProjectLink>
-            ) : null}
-            {showLive ? (
-              <ProjectLink
-                href={project.liveUrl as string}
-                projectId={project.id}
-                icon={<ExternalLinkIcon />}
-              >
-                Live Demo
-              </ProjectLink>
-            ) : null}
-          </div>
-        ) : null}
+        <dl className="rounded-lg border border-white/[0.07] bg-white/[0.025] p-space-2">
+          <dt className="font-mono text-[0.62rem] font-medium uppercase tracking-widest text-accent">
+            Outcome
+          </dt>
+          <dd className="mt-1 text-pretty font-sans text-caption leading-relaxed text-text">
+            {project.impact}
+          </dd>
+        </dl>
+
+        <details className="group/details border-y border-hairline py-space-1">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between font-mono text-[0.65rem] uppercase tracking-widest text-muted transition-colors hover:text-text [&::-webkit-details-marker]:hidden">
+            Case study details
+            <span
+              aria-hidden="true"
+              className="text-accent transition-transform group-open/details:rotate-45"
+            >
+              +
+            </span>
+          </summary>
+          <dl className="flex flex-col gap-space-3 pb-space-2">
+            <div>
+              <dt className="font-mono text-[0.62rem] uppercase tracking-widest text-accent">
+                Problem
+              </dt>
+              <dd className="mt-1 text-pretty text-caption leading-relaxed text-muted">
+                {project.problem}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[0.62rem] uppercase tracking-widest text-accent">
+                Solution
+              </dt>
+              <dd className="mt-1 text-pretty text-caption leading-relaxed text-muted">
+                {project.solution}
+              </dd>
+            </div>
+          </dl>
+        </details>
+
+        <div className="mt-auto flex flex-wrap items-center gap-space-4">
+          <Link
+            href={`/projects/${project.slug}`}
+            className="inline-flex min-h-11 items-center font-mono text-[0.65rem] font-medium uppercase tracking-widest text-accent transition-colors hover:text-text"
+          >
+            View case study →
+          </Link>
+          {showGithub || showLive ? (
+            <>
+              {showGithub ? (
+                <ProjectLink
+                  href={project.githubUrl as string}
+                  projectId={project.id}
+                  icon={<GitHubIcon />}
+                >
+                  GitHub
+                </ProjectLink>
+              ) : null}
+              {showLive ? (
+                <ProjectLink
+                  href={project.liveUrl as string}
+                  projectId={project.id}
+                  icon={<ExternalLinkIcon />}
+                >
+                  Live Demo
+                </ProjectLink>
+              ) : null}
+            </>
+          ) : null}
+        </div>
       </div>
     </Card>
   );

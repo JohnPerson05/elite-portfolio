@@ -25,7 +25,7 @@ const baseStyles =
   "transition-[transform,border-color,box-shadow] duration-200 ease-out";
 
 const hoverStyles: Record<CardHover, string> = {
-  lift: "hover:-translate-y-1 hover:border-accent/40",
+  lift: "hover:-translate-y-1 hover:border-accent/40 motion-reduce:hover:translate-y-0",
   glow: "hover:shadow-[0_0_0_1px_rgba(212,175,55,0.2),0_12px_40px_-12px_rgba(212,175,55,0.25)]",
   border: "hover:border-accent",
 };
@@ -36,13 +36,7 @@ const hoverStyles: Record<CardHover, string> = {
  * hairline border rather than heavy shadows. Pass `hover` to opt into a subtle
  * interactive treatment.
  */
-export function Card({
-  hover,
-  as,
-  className,
-  children,
-  ...rest
-}: CardProps) {
+export function Card({ hover, as, className, children, ...rest }: CardProps) {
   const Component = as ?? "div";
   return (
     <Component

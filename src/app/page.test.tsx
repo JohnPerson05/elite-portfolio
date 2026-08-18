@@ -21,6 +21,7 @@ vi.mock("@/components/analytics", () => ({
 vi.mock("@/features/hero", () => ({
   __esModule: true,
   Hero: () => <section aria-label="Hero section">Hero</section>,
+  CapabilityTicker: () => <div aria-hidden="true">Capabilities</div>,
 }));
 vi.mock("@/features/trust", () => ({
   __esModule: true,
@@ -86,9 +87,7 @@ describe("Home page — composition (Requirement 1.5)", () => {
   it("renders all eight feature sections", () => {
     render(<Home />);
     for (const label of SECTION_ORDER) {
-      expect(
-        screen.getByRole("region", { name: label }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("region", { name: label })).toBeInTheDocument();
     }
   });
 

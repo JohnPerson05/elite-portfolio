@@ -190,7 +190,10 @@ export function ContactForm({
     <section
       id="contact"
       aria-labelledby={headingId}
-      className={cn("w-full px-space-2 py-section sm:px-space-4", className)}
+      className={cn(
+        "w-full bg-bg-secondary px-space-2 py-section sm:px-space-4",
+        className,
+      )}
     >
       <div className="mx-auto flex max-w-content flex-col items-center gap-space-8">
         <FadeUp>
