@@ -60,7 +60,7 @@ export default function Home() {
       <CapabilityTicker />
       <TrustStats />
       <FeaturedProjects />
-      <Skills />
+      <Skills compact />
       <Timeline />
       <Testimonials />
       <BlogPreview />

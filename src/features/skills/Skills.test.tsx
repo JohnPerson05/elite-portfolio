@@ -182,3 +182,35 @@ describe("Skills — proficiency bars when motion is allowed (Req 4.2, 4.3)", ()
     );
   });
 });
+
+describe("Skills — compact homepage summary", () => {
+  it("shows only key skills and links visitors to the full matrix", async () => {
+    mockMatchMedia(reducedMotionMatcher);
+    const backendSkills = Array.from({ length: 7 }, (_value, index) =>
+      makeSkill(SkillCategory.BACKEND, {
+        id: `backend-${index}`,
+        name: `Backend ${index + 1}`,
+        order: index,
+      }),
+    );
+    const ui = await Skills({
+      skills: [
+        ...backendSkills,
+        ...oneSkillPerCategory().filter(
+          (skill) => skill.category !== SkillCategory.BACKEND,
+        ),
+      ],
+      compact: true,
+    });
+    render(ui);
+
+    expect(screen.getByText("Backend 1")).toBeInTheDocument();
+    expect(screen.getByText("Backend 5")).toBeInTheDocument();
+    expect(screen.queryByText("Backend 6")).not.toBeInTheDocument();
+    expect(screen.getByText("+2 more in full matrix")).toBeInTheDocument();
+    expect(screen.queryAllByRole("progressbar")).toHaveLength(0);
+    expect(
+      screen.getByRole("link", { name: /view the capability matrix/i }),
+    ).toHaveAttribute("href", "/skills");
+  });
+});

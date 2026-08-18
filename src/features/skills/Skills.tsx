@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FadeUp, Stagger } from "@/components/motion";
-import { Card, EmptyState, SectionHeading } from "@/components/ui";
+import { Card, EmptyState, SectionHeading, Tag } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { SkillView } from "@/types";
 import {
@@ -29,6 +29,8 @@ export interface SkillsProps {
   heading?: string;
   /** Show the homepage link to the dedicated capabilities page. */
   showDetailLink?: boolean;
+  /** Render a condensed capability overview instead of every proficiency bar. */
+  compact?: boolean;
   className?: string;
 }
 
@@ -59,6 +61,7 @@ export async function Skills({
   eyebrow = SKILLS_EYEBROW,
   heading = SKILLS_HEADING,
   showDetailLink = true,
+  compact = false,
   className,
 }: SkillsProps) {
   const source = skills ?? (await getSkills());
@@ -80,6 +83,11 @@ export async function Skills({
           id={headingId}
           eyebrow={eyebrow}
           heading={heading}
+          description={
+            compact
+              ? "A focused overview of the engineering capabilities used across enterprise systems, full-stack products, cloud delivery, and rapid MVP development."
+              : undefined
+          }
           align="center"
           className="mx-auto"
         />
@@ -128,67 +136,137 @@ export async function Skills({
               </div>
             </FadeUp>
 
-            <Stagger
-              as="ul"
-              className="grid grid-cols-1 gap-space-4 lg:grid-cols-2"
-            >
-              {groups.map((group, groupIndex) => {
-                const groupHeadingId = `skills-${group.category.toLowerCase()}-heading`;
-                return (
-                  <FadeUp
-                    as="li"
-                    key={group.category}
-                    className="h-full list-none"
-                  >
-                    <Card
-                      as="section"
-                      aria-labelledby={groupHeadingId}
-                      className="relative flex h-full flex-col overflow-hidden p-space-4"
+            {compact ? (
+              <Stagger
+                as="ul"
+                className="grid grid-cols-1 gap-space-3 sm:grid-cols-2 xl:grid-cols-4"
+              >
+                {groups.map((group, groupIndex) => {
+                  const groupHeadingId = `skills-${group.category.toLowerCase()}-heading`;
+                  const highlightedSkills = group.skills.slice(0, 5);
+                  const remainingSkills =
+                    group.skills.length - highlightedSkills.length;
+
+                  return (
+                    <FadeUp
+                      as="li"
+                      key={group.category}
+                      className="h-full list-none"
                     >
-                      <div className="absolute right-space-3 top-space-2 font-mono text-hero font-semibold text-white/[0.025]">
-                        0{groupIndex + 1}
-                      </div>
-                      <header className="relative mb-space-4 flex items-start gap-space-3 border-b border-hairline pb-space-3">
-                        <span className="border-accent/20 bg-accent/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border font-mono text-caption font-semibold text-accent">
+                      <Card
+                        as="section"
+                        aria-labelledby={groupHeadingId}
+                        hover="border"
+                        className="relative flex h-full flex-col overflow-hidden p-space-4"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="absolute right-space-2 top-space-1 font-mono text-h1 font-semibold text-white/[0.025]"
+                        >
                           0{groupIndex + 1}
                         </span>
-                        <div>
-                          <h3
-                            id={groupHeadingId}
-                            className="font-display text-h3 font-semibold tracking-tight text-text"
-                          >
-                            {group.label}
-                          </h3>
-                          <p className="mt-1 max-w-md text-pretty text-caption text-muted">
-                            {SKILL_CATEGORY_DESCRIPTIONS[group.category]}
-                          </p>
+                        <div className="border-accent/20 bg-accent/10 relative flex h-10 w-10 items-center justify-center rounded-lg border font-mono text-caption font-semibold text-accent">
+                          0{groupIndex + 1}
                         </div>
-                        <span className="px-space-1.5 ml-auto shrink-0 rounded-full border border-white/10 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-muted">
-                          {group.skills.length} skills
-                        </span>
-                      </header>
-
-                      {group.skills.length > 0 ? (
-                        <ul className="relative grid gap-space-2 sm:grid-cols-2">
-                          {group.skills.map((skill) => (
-                            <li key={skill.id}>
-                              <ProficiencyBar
-                                name={skill.name}
-                                proficiency={skill.proficiency}
-                              />
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="font-sans text-body text-muted">
-                          Coming soon.
+                        <h3
+                          id={groupHeadingId}
+                          className="relative mt-space-4 font-display text-h3 font-semibold tracking-tight text-text"
+                        >
+                          {group.label}
+                        </h3>
+                        <p className="relative mt-space-2 min-h-12 text-pretty text-caption leading-relaxed text-muted">
+                          {SKILL_CATEGORY_DESCRIPTIONS[group.category]}
                         </p>
-                      )}
-                    </Card>
-                  </FadeUp>
-                );
-              })}
-            </Stagger>
+
+                        {highlightedSkills.length > 0 ? (
+                          <ul className="relative mt-space-4 flex flex-wrap gap-space-1">
+                            {highlightedSkills.map((skill) => (
+                              <li key={skill.id}>
+                                <Tag>{skill.name}</Tag>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="relative mt-space-4 font-sans text-body text-muted">
+                            Coming soon.
+                          </p>
+                        )}
+
+                        <div className="relative mt-auto border-t border-hairline pt-space-3">
+                          <span className="font-mono text-[0.6rem] uppercase tracking-wider text-muted">
+                            {remainingSkills > 0
+                              ? `+${remainingSkills} more in full matrix`
+                              : `${group.skills.length} key skill${group.skills.length === 1 ? "" : "s"}`}
+                          </span>
+                        </div>
+                      </Card>
+                    </FadeUp>
+                  );
+                })}
+              </Stagger>
+            ) : (
+              <Stagger
+                as="ul"
+                className="grid grid-cols-1 gap-space-4 lg:grid-cols-2"
+              >
+                {groups.map((group, groupIndex) => {
+                  const groupHeadingId = `skills-${group.category.toLowerCase()}-heading`;
+                  return (
+                    <FadeUp
+                      as="li"
+                      key={group.category}
+                      className="h-full list-none"
+                    >
+                      <Card
+                        as="section"
+                        aria-labelledby={groupHeadingId}
+                        className="relative flex h-full flex-col overflow-hidden p-space-4"
+                      >
+                        <div className="absolute right-space-3 top-space-2 font-mono text-hero font-semibold text-white/[0.025]">
+                          0{groupIndex + 1}
+                        </div>
+                        <header className="relative mb-space-4 flex items-start gap-space-3 border-b border-hairline pb-space-3">
+                          <span className="border-accent/20 bg-accent/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border font-mono text-caption font-semibold text-accent">
+                            0{groupIndex + 1}
+                          </span>
+                          <div>
+                            <h3
+                              id={groupHeadingId}
+                              className="font-display text-h3 font-semibold tracking-tight text-text"
+                            >
+                              {group.label}
+                            </h3>
+                            <p className="mt-1 max-w-md text-pretty text-caption text-muted">
+                              {SKILL_CATEGORY_DESCRIPTIONS[group.category]}
+                            </p>
+                          </div>
+                          <span className="px-space-1.5 ml-auto shrink-0 rounded-full border border-white/10 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-muted">
+                            {group.skills.length} skills
+                          </span>
+                        </header>
+
+                        {group.skills.length > 0 ? (
+                          <ul className="relative grid gap-space-2 sm:grid-cols-2">
+                            {group.skills.map((skill) => (
+                              <li key={skill.id}>
+                                <ProficiencyBar
+                                  name={skill.name}
+                                  proficiency={skill.proficiency}
+                                />
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="font-sans text-body text-muted">
+                            Coming soon.
+                          </p>
+                        )}
+                      </Card>
+                    </FadeUp>
+                  );
+                })}
+              </Stagger>
+            )}
           </>
         ) : (
           <EmptyState
