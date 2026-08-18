@@ -36,8 +36,11 @@ export interface UseInViewResult<T extends Element> {
 export function useInView<T extends Element = HTMLElement>(
   options: UseInViewOptions = {},
 ): UseInViewResult<T> {
-  const { once = true, rootMargin = "0px 0px -10% 0px", amount = 0.2 } =
-    options;
+  const {
+    once = true,
+    rootMargin = "0px 0px -10% 0px",
+    amount = 0.2,
+  } = options;
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
 
@@ -55,6 +58,25 @@ export function useInView<T extends Element = HTMLElement>(
       return;
     }
 
+    let fallback: number | undefined;
+    const cleanupFallback = () => {
+      if (fallback !== undefined) window.clearTimeout(fallback);
+      window.removeEventListener("scroll", revealIfVisible);
+      window.removeEventListener("resize", revealIfVisible);
+    };
+    const revealIfVisible = () => {
+      const rect = element.getBoundingClientRect();
+      const viewportHeight =
+        window.innerHeight || document.documentElement.clientHeight;
+      if (rect.bottom > 0 && rect.top < viewportHeight) {
+        setInView(true);
+        if (once) {
+          observer.disconnect();
+          cleanupFallback();
+        }
+      }
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
@@ -64,6 +86,7 @@ export function useInView<T extends Element = HTMLElement>(
           setInView(true);
           if (once) {
             observer.disconnect();
+            cleanupFallback();
           }
         } else if (!once) {
           setInView(false);
@@ -73,7 +96,17 @@ export function useInView<T extends Element = HTMLElement>(
     );
 
     observer.observe(element);
+
+    // Browser extensions, aggressive privacy settings, and occasional
+    // hydration timing can prevent/delay IntersectionObserver callbacks. Keep
+    // a lightweight viewport check as a progressive-enhancement fallback so
+    // content is never left permanently at opacity: 0.
+    fallback = window.setTimeout(revealIfVisible, 250);
+    window.addEventListener("scroll", revealIfVisible, { passive: true });
+    window.addEventListener("resize", revealIfVisible);
+
     return () => {
+      cleanupFallback();
       observer.disconnect();
     };
   }, [once, rootMargin, amount]);
