@@ -82,12 +82,14 @@ model Testimonial {
 }
 
 model ContactSubmission {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  company   String?
-  message   String
-  createdAt DateTime @default(now())
+  id              String    @id @default(cuid())
+  name            String
+  email           String
+  company         String?
+  message         String
+  attachmentUrls  String[]  @default([])
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
 
   @@index([createdAt])
 }

@@ -192,8 +192,10 @@ const baseContactSubmission: ContactSubmission = {
   name: "Jordan Lee",
   email: "jordan@example.com",
   company: "Acme Corp",
-  message: "I'd love to talk about a role on your team.",
-  createdAt: new Date("2025-02-20T09:15:00.000Z"),
+    message: "I'd love to talk about a role on your team.",
+    attachmentUrls: [],
+    createdAt: new Date("2025-02-20T09:15:00.000Z"),
+    readAt: null,
 };
 
 describe("toContactSubmissionView", () => {
@@ -225,5 +227,32 @@ describe("toContactSubmissionView", () => {
   it("does not carry the Prisma-only createdAt field", () => {
     const view = toContactSubmissionView(baseContactSubmission);
     expect(view).not.toHaveProperty("createdAt");
+  });
+
+  it("preserves attachment URLs", () => {
+    const view = toContactSubmissionView({
+      ...baseContactSubmission,
+      attachmentUrls: [
+        "https://example.blob.vercel-storage.com/contact-ideas/brief.pdf",
+      ],
+    });
+    expect(view.attachmentUrls).toEqual([
+      "https://example.blob.vercel-storage.com/contact-ideas/brief.pdf",
+    ]);
+  });
+
+  it("maps a null readAt to unread", () => {
+    const view = toContactSubmissionView(baseContactSubmission);
+    expect(view.read).toBe(false);
+    expect(view.readAt).toBeUndefined();
+  });
+
+  it("maps a present readAt to read", () => {
+    const view = toContactSubmissionView({
+      ...baseContactSubmission,
+      readAt: new Date("2025-02-20T10:00:00.000Z"),
+    });
+    expect(view.read).toBe(true);
+    expect(view.readAt).toBe("2025-02-20T10:00:00.000Z");
   });
 });
