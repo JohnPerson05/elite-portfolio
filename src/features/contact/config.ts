@@ -14,7 +14,7 @@ export const CONTACT_HEADING = "Let's build something exceptional" as const;
 
 /** Supporting copy shown beneath the heading. */
 export const CONTACT_DESCRIPTION =
-  "Have a role, a project, or an idea in mind? Send a message and I'll get back to you." as const;
+  "Have a role, a project, or an idea in mind? Send a message — and attach a brief, mockup, or sketch if you have one." as const;
 
 /** Confirmation shown after a submission succeeds (Req 8.4). */
 export const CONTACT_SUCCESS_MESSAGE =

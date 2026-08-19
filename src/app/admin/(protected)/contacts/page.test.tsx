@@ -10,12 +10,9 @@ import { render, screen, within } from "@testing-library/react";
  *  (c) the route is guarded — the contacts page is a sibling under the
  *      `app/admin/(protected)` route group, so it inherits the guarded layout
  *      whose `requireSession()` redirects unauthenticated requests before any
- *      content renders (Req 9.1 / Property 7). We assert that guard here via the
- *      protected layout (mirroring Task 21's layout.test.tsx) rather than
- *      duplicating the whole auth flow.
+ *      content renders (Req 9.1 / Property 7).
  */
 
-// --- Mock next/navigation (redirect + usePathname) --------------------------
 class RedirectError extends Error {
   constructor(public readonly destination: string) {
     super(`NEXT_REDIRECT:${destination}`);
@@ -29,23 +26,25 @@ vi.mock("next/navigation", () => ({
   __esModule: true,
   redirect: (destination: string) => redirectMock(destination),
   usePathname: () => "/admin/contacts",
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
-// --- Mock the auth module so the layout's guard is controllable -------------
 vi.mock("@/lib/auth", () => ({
   __esModule: true,
   requireSession: vi.fn(),
 }));
 
-// --- Mock the logout action used by the nav's client island -----------------
 vi.mock("@/actions/auth", () => ({
   __esModule: true,
   logout: vi.fn(async () => undefined),
 }));
 
-// --- Mock the contacts data helper. The recency ordering and DTO mapping are
-//     covered by data.test.ts / config.test.ts; here we drive the page's list
-//     vs. empty-state branches by controlling its return value.
+vi.mock("@/actions/contacts", () => ({
+  __esModule: true,
+  deleteContact: vi.fn(),
+  markContactRead: vi.fn(),
+}));
+
 vi.mock("@/features/admin/contacts/data", () => ({
   __esModule: true,
   getContactSubmissions: vi.fn(),
@@ -65,7 +64,13 @@ const mockedGetContacts = getContactSubmissions as unknown as ReturnType<
 
 const LOGIN_PATH = "/admin/login";
 
-function makeSubmission(id: string, submittedAt: string, company?: string) {
+function makeSubmission(
+  id: string,
+  submittedAt: string,
+  company?: string,
+  attachmentUrls: string[] = [],
+  read = false,
+) {
   return {
     id,
     name: `Name ${id}`,
@@ -73,6 +78,8 @@ function makeSubmission(id: string, submittedAt: string, company?: string) {
     company,
     message: `Message ${id}`,
     submittedAt,
+    attachmentUrls,
+    read,
   };
 }
 
@@ -95,44 +102,54 @@ describe("AdminContactsPage — submissions listed newest-first (Property 10; Re
     const ui = await AdminContactsPage();
     render(ui);
 
-    // Names render as row headers; their order reflects the newest-first list.
-    const rowHeaders = screen
-      .getAllByRole("rowheader")
-      .map((cell) => cell.textContent);
-    expect(rowHeaders).toEqual(["Name newest", "Name middle", "Name oldest"]);
+    const headings = screen
+      .getAllByRole("heading", { level: 2 })
+      .map((heading) => heading.textContent);
+    expect(headings).toEqual(["Name newest", "Name middle", "Name oldest"]);
 
-    // Each field is present (Req 12.1): email, message, timestamp, and the
-    // optional company when provided.
     expect(
-      screen.getByRole("link", { name: "newest@example.com" }),
-    ).toHaveAttribute("href", "mailto:newest@example.com");
+      screen.getByRole("link", { name: /name newest/i }),
+    ).toHaveAttribute("href", "/admin/contacts/newest");
     expect(screen.getByText("Message newest")).toBeInTheDocument();
-    expect(screen.getByText("Acme Corp")).toBeInTheDocument();
-    // Timestamp rendered as a <time> with a machine-readable dateTime.
+    expect(screen.getByText(/Acme Corp/)).toBeInTheDocument();
     const time = screen.getByText(/Feb 20, 2025/);
     expect(time).toHaveAttribute("dateTime", "2025-02-20T09:15:00.000Z");
+    expect(screen.getAllByText("Unread")).toHaveLength(3);
 
-    // No empty state when there are submissions.
     expect(screen.queryByText(/no submissions yet/i)).not.toBeInTheDocument();
+  });
+
+  it("shows a file count and links to the inquiry that has attachments", async () => {
+    mockedGetContacts.mockResolvedValueOnce([
+      makeSubmission("with-files", "2025-02-20T09:15:00.000Z", "Acme Corp", [
+        "https://example.blob.vercel-storage.com/contact-ideas/123-0-brief.pdf",
+      ]),
+    ]);
+
+    const ui = await AdminContactsPage();
+    render(ui);
+
+    expect(screen.getByText("1 file")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /name with-files/i }),
+    ).toHaveAttribute("href", "/admin/contacts/with-files");
   });
 });
 
 describe("AdminContactsPage — empty state (Req 12.2)", () => {
-  it("renders an empty state and no table when there are no submissions", async () => {
+  it("renders an empty state and no inbox list when there are no submissions", async () => {
     mockedGetContacts.mockResolvedValueOnce([]);
 
     const ui = await AdminContactsPage();
     render(ui);
 
     expect(screen.getByText(/no submissions yet/i)).toBeInTheDocument();
-    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
   });
 });
 
 describe("Admin contacts route is guarded (Req 9.1; Property 7)", () => {
   it("redirects to login and renders no content when unauthenticated", async () => {
-    // The contacts page sits under the (protected) group; its layout guard
-    // redirects before children render.
     mockedRequireSession.mockImplementationOnce(async () => {
       redirectMock(LOGIN_PATH);
     });
@@ -156,14 +173,12 @@ describe("Admin contacts route is guarded (Req 9.1; Property 7)", () => {
     });
     render(ui);
 
-    // The guarded shell exposes the admin nav with a link to this route...
     const nav = screen.getByRole("navigation", { name: "Admin" });
     expect(within(nav).getByRole("link", { name: "Contacts" })).toHaveAttribute(
       "href",
       "/admin/contacts",
     );
 
-    // ...and the page content is rendered without any redirect.
     expect(screen.getByText("contacts content")).toBeInTheDocument();
     expect(redirectMock).not.toHaveBeenCalled();
   });

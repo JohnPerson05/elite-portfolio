@@ -20,7 +20,7 @@ export const CONTACTS_EYEBROW = "Inbox" as const;
 export const CONTACTS_HEADING = "Contact submissions" as const;
 /** Supporting copy beneath the heading. */
 export const CONTACTS_DESCRIPTION =
-  "Messages sent through the public contact form, most recent first." as const;
+  "Open an inquiry to read the full message and attachments. New messages stay unread until you view them." as const;
 
 /** Empty-state copy shown when there are no submissions (Requirement 12.2). */
 export const CONTACTS_EMPTY_TITLE = "No submissions yet" as const;
@@ -29,6 +29,49 @@ export const CONTACTS_EMPTY_DESCRIPTION =
 
 /** Fallback rendered for a submission with no company (optional field). */
 export const CONTACTS_NO_COMPANY = "—" as const;
+/** Fallback rendered when a submission has no attached files. */
+export const CONTACTS_NO_ATTACHMENTS = "No files attached." as const;
+/** Status labels for the inbox list and detail view. */
+export const CONTACTS_UNREAD_LABEL = "Unread" as const;
+export const CONTACTS_READ_LABEL = "Read" as const;
+/** Inbox list / detail navigation. */
+export const ADMIN_CONTACTS_HREF = "/admin/contacts" as const;
+export function adminContactHref(id: string): string {
+  return `${ADMIN_CONTACTS_HREF}/${id}`;
+}
+
+export const CONTACTS_OPEN_LABEL = "View inquiry" as const;
+export const CONTACTS_BACK_LABEL = "Back to inbox" as const;
+export const CONTACTS_FILES_HEADING = "Attachments" as const;
+
+export const CONTACT_DELETE_LABEL = "Delete" as const;
+export const CONTACT_DELETE_TITLE = "Delete this inquiry?" as const;
+export const CONTACT_DELETE_DESCRIPTION =
+  "This removes the message and its attachment links from the inbox. Uploaded files are not recoverable from here." as const;
+export const CONTACT_DELETE_CONFIRM = "Delete inquiry" as const;
+export const CONTACT_DELETE_CANCEL = "Cancel" as const;
+export const CONTACT_DELETING_LABEL = "Deleting…" as const;
+export const CONTACT_GENERIC_ERROR =
+  "Something went wrong. Please try again." as const;
+
+const MESSAGE_PREVIEW_MAX = 140;
+
+/**
+ * Collapse whitespace and truncate a message for the inbox list.
+ */
+export function previewMessage(
+  message: string,
+  max = MESSAGE_PREVIEW_MAX,
+): string {
+  const compact = message.replace(/\s+/g, " ").trim();
+  if (compact.length <= max) return compact;
+  return `${compact.slice(0, max).trimEnd()}…`;
+}
+
+export function filesLabel(count: number): string {
+  if (count <= 0) return "No files";
+  return count === 1 ? "1 file" : `${count} files`;
+}
 
 /**
  * Order submissions most-recent-first by `submittedAt` (Correctness Property 10

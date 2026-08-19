@@ -27,3 +27,18 @@ export async function getContactSubmissions(): Promise<
 
   return sortByRecency(rows.map(toContactSubmissionView));
 }
+
+/** Load a single inquiry for the admin detail view. */
+export async function getContactSubmissionById(
+  id: string,
+): Promise<ContactSubmissionView | null> {
+  if (typeof id !== "string" || id.trim() === "") {
+    return null;
+  }
+
+  const row = await prisma.contactSubmission.findUnique({
+    where: { id },
+  });
+
+  return row ? toContactSubmissionView(row) : null;
+}

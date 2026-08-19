@@ -10,8 +10,13 @@ vi.mock("@/actions/contact", () => ({
   submitContact: vi.fn(),
 }));
 
+vi.mock("@vercel/blob/client", () => ({
+  upload: vi.fn(),
+}));
+
 import { ToastProvider } from "@/components/ui";
 import { submitContact } from "@/actions/contact";
+import { upload } from "@vercel/blob/client";
 import { HONEYPOT_FIELD } from "@/lib/validation/contact";
 import { ContactForm } from "./ContactForm";
 import { CONTACT_SUCCESS_MESSAGE } from "./config";
@@ -19,6 +24,7 @@ import { CONTACT_SUCCESS_MESSAGE } from "./config";
 const mockedSubmitContact = submitContact as unknown as ReturnType<
   typeof vi.fn
 >;
+const mockedUpload = upload as unknown as ReturnType<typeof vi.fn>;
 
 /** Render the form inside the ToastProvider it depends on. */
 function renderForm(ui: ReactElement = <ContactForm />) {
@@ -69,6 +75,7 @@ describe("ContactForm — accessible structure (Req 8.1)", () => {
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/company/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/message/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/project files/i)).toBeInTheDocument();
   });
 });
 
@@ -153,6 +160,8 @@ describe("ContactForm — successful submit (Req 8.2, 8.4)", () => {
     expect(formData.get("company")).toBe(VALID.company);
     expect(formData.get("message")).toBe(VALID.message);
     expect(formData.get(HONEYPOT_FIELD)).toBe("");
+    expect(formData.getAll("attachmentUrls")).toEqual([]);
+    expect(mockedUpload).not.toHaveBeenCalled();
   });
 
   it("shows a success confirmation and resets the form on success", async () => {
@@ -175,6 +184,41 @@ describe("ContactForm — successful submit (Req 8.2, 8.4)", () => {
     expect(screen.getByLabelText(/email/i)).toHaveValue("");
     expect(screen.getByLabelText(/company/i)).toHaveValue("");
     expect(screen.getByLabelText(/message/i)).toHaveValue("");
+  });
+
+  it("uploads selected idea files and submits their public URLs", async () => {
+    mockedUpload.mockResolvedValueOnce({
+      url: "https://example.blob.vercel-storage.com/contact-ideas/brief.pdf",
+    });
+    mockedSubmitContact.mockResolvedValueOnce({ success: true });
+    const user = userEvent.setup();
+    renderForm();
+
+    await fillForm(user);
+    const file = new File(["idea brief"], "brief.pdf", {
+      type: "application/pdf",
+    });
+    await user.upload(screen.getByLabelText(/project files/i), file);
+    expect(screen.getByText("brief.pdf")).toBeInTheDocument();
+
+    await user.click(submitButton());
+
+    await waitFor(() => {
+      expect(mockedUpload).toHaveBeenCalledTimes(1);
+      expect(mockedSubmitContact).toHaveBeenCalledTimes(1);
+    });
+
+    const [pathname, uploadedFile] = mockedUpload.mock.calls[0] as [
+      string,
+      File,
+    ];
+    expect(pathname).toMatch(/^contact-ideas\//);
+    expect(uploadedFile.name).toBe("brief.pdf");
+
+    const [formData] = mockedSubmitContact.mock.calls[0] as [FormData];
+    expect(formData.getAll("attachmentUrls")).toEqual([
+      "https://example.blob.vercel-storage.com/contact-ideas/brief.pdf",
+    ]);
   });
 });
 

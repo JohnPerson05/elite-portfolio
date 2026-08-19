@@ -1,5 +1,6 @@
 "use client";
 
+import { upload } from "@vercel/blob/client";
 import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import { FadeUp } from "@/components/motion";
 import {
@@ -12,6 +13,15 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { submitContact } from "@/actions/contact";
+import {
+  CONTACT_ATTACHMENT_ACCEPT,
+  CONTACT_ATTACHMENT_HANDLE_URL,
+  CONTACT_ATTACHMENT_MAX_BYTES,
+  CONTACT_ATTACHMENT_MAX_FILES,
+  contactAttachmentPathname,
+  isAllowedContactAttachment,
+  withContactAttachmentType,
+} from "@/lib/contact-attachments";
 import { HONEYPOT_FIELD, contactSchema } from "@/lib/validation/contact";
 import {
   CONTACT_DESCRIPTION,
@@ -32,7 +42,9 @@ interface ContactValues {
 }
 
 /** Per-field error text keyed by field name (first message wins). */
-type ContactFieldErrors = Partial<Record<keyof ContactValues, string>>;
+type ContactFieldErrors = Partial<
+  Record<keyof ContactValues | "attachmentUrls", string>
+>;
 
 const EMPTY_VALUES: ContactValues = {
   name: "",
@@ -40,6 +52,9 @@ const EMPTY_VALUES: ContactValues = {
   company: "",
   message: "",
 };
+
+const FILE_HINT =
+  "PDF, Word, JPG, PNG, WebP, GIF, or AVIF. Optional. Up to 5 files, 8 MB each.";
 
 /**
  * Collapse Zod's `flatten().fieldErrors` (arrays per key) into a single message
@@ -52,13 +67,24 @@ function toFieldErrors(
 ): ContactFieldErrors {
   if (!source) return {};
   const next: ContactFieldErrors = {};
-  for (const key of ["name", "email", "company", "message"] as const) {
+  for (const key of [
+    "name",
+    "email",
+    "company",
+    "message",
+    "attachmentUrls",
+  ] as const) {
     const message = source[key]?.[0];
     if (message) {
       next[key] = message;
     }
   }
   return next;
+}
+
+function fileTooLargeMessage(name: string): string {
+  const limitMb = CONTACT_ATTACHMENT_MAX_BYTES / (1024 * 1024);
+  return `${name} is larger than ${limitMb} MB.`;
 }
 
 export interface ContactFormProps {
@@ -74,24 +100,10 @@ export interface ContactFormProps {
 /**
  * `ContactForm` — the homepage contact section (Requirement 8).
  *
- * A client component with Name, Email, Company (optional), and Message fields
- * plus a hidden honeypot ({@link HONEYPOT_FIELD}) for anti-abuse (Req 8.1,
- * 8.7). On submit it validates client-side against {@link contactSchema} so
- * invalid input surfaces inline field errors WITHOUT hitting the server persist
- * path (Req 8.3 / Property 4 at the form layer); only valid input calls the
- * {@link submitContact} Server Action.
- *
- * Result handling mirrors the design's contact sequence:
- * - success (`{ success: true }`): show a confirmation + reset the form
- *   (Req 8.4), with a polite success toast.
- * - server failure (`{ success: false, formError }`): show the error message
- *   and PRESERVE the user's entered data (Req 8.5); also surface any
- *   server-returned `fieldErrors` inline.
- *
- * Accessibility: rendered as a labelled `<section>` landmark; every control is
- * wired through {@link Field} (`<label>` + `aria-invalid`/`aria-describedby`),
- * keyboard operable with a visible focus ring. `noValidate` defers validation
- * to Zod so the messaging is consistent across browsers and assistive tech.
+ * A client component with Name, Email, Company (optional), Message, and
+ * optional idea-file fields plus a hidden honeypot ({@link HONEYPOT_FIELD})
+ * for anti-abuse (Req 8.1, 8.7). Selected files are uploaded to Blob before the
+ * Server Action runs, so the persist path only receives public URLs.
  */
 export function ContactForm({
   eyebrow = CONTACT_EYEBROW,
@@ -105,6 +117,7 @@ export function ContactForm({
   const statusId = useId();
 
   const [values, setValues] = useState<ContactValues>(EMPTY_VALUES);
+  const [files, setFiles] = useState<File[]>([]);
   const [honeypot, setHoneypot] = useState("");
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
   const [formError, setFormError] = useState<string | undefined>(undefined);
@@ -123,6 +136,65 @@ export function ContactForm({
       if (!(name in current)) return current;
       const next = { ...current };
       delete next[name as keyof ContactValues];
+      return next;
+    });
+  };
+
+  const handleFilesChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const incoming = Array.from(event.target.files ?? []).map(
+      withContactAttachmentType,
+    );
+    event.target.value = "";
+    if (formError) setFormError(undefined);
+    if (succeeded) setSucceeded(false);
+
+    if (incoming.length === 0) return;
+
+    const rejected = incoming.find((file) => !isAllowedContactAttachment(file));
+    if (rejected) {
+      const message =
+        rejected.size > CONTACT_ATTACHMENT_MAX_BYTES
+          ? fileTooLargeMessage(rejected.name)
+          : `${rejected.name} must be a PDF, Word, or image file.`;
+      setFieldErrors((current) => ({ ...current, attachmentUrls: message }));
+      return;
+    }
+
+    const remainingSlots = CONTACT_ATTACHMENT_MAX_FILES - files.length;
+    const uniqueIncoming = incoming.filter(
+      (file) =>
+        !files.some(
+          (existing) =>
+            existing.name === file.name && existing.size === file.size,
+        ),
+    );
+    const accepted = uniqueIncoming.slice(0, Math.max(0, remainingSlots));
+
+    if (uniqueIncoming.length > remainingSlots) {
+      setFieldErrors((current) => ({
+        ...current,
+        attachmentUrls: `You can attach up to ${CONTACT_ATTACHMENT_MAX_FILES} files.`,
+      }));
+    } else {
+      setFieldErrors((current) => {
+        if (!current.attachmentUrls) return current;
+        const next = { ...current };
+        delete next.attachmentUrls;
+        return next;
+      });
+    }
+
+    if (accepted.length > 0) {
+      setFiles((current) => [...current, ...accepted]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
+    setFieldErrors((current) => {
+      if (!current.attachmentUrls) return current;
+      const next = { ...current };
+      delete next.attachmentUrls;
       return next;
     });
   };
@@ -147,20 +219,55 @@ export function ContactForm({
     }
     setFieldErrors({});
 
-    const formData = new FormData();
-    formData.set("name", values.name);
-    formData.set("email", values.email);
-    formData.set("company", values.company);
-    formData.set("message", values.message);
-    formData.set(HONEYPOT_FIELD, honeypot);
+    if (files.length > CONTACT_ATTACHMENT_MAX_FILES) {
+      setFieldErrors({
+        attachmentUrls: `You can attach up to ${CONTACT_ATTACHMENT_MAX_FILES} files.`,
+      });
+      return;
+    }
 
     setSubmitting(true);
     try {
+      const attachmentUrls: string[] = [];
+      for (const [index, raw] of files.entries()) {
+        const file = withContactAttachmentType(raw);
+        if (!isAllowedContactAttachment(file)) {
+          const message =
+            file.size > CONTACT_ATTACHMENT_MAX_BYTES
+              ? fileTooLargeMessage(file.name)
+              : `${file.name} must be a PDF, Word, or image file.`;
+          setFieldErrors({ attachmentUrls: message });
+          return;
+        }
+
+        const blob = await upload(
+          contactAttachmentPathname(file.name, index),
+          file,
+          {
+            access: "public",
+            handleUploadUrl: CONTACT_ATTACHMENT_HANDLE_URL,
+            multipart: file.size > 4 * 1024 * 1024,
+          },
+        );
+        attachmentUrls.push(blob.url);
+      }
+
+      const formData = new FormData();
+      formData.set("name", values.name);
+      formData.set("email", values.email);
+      formData.set("company", values.company);
+      formData.set("message", values.message);
+      formData.set(HONEYPOT_FIELD, honeypot);
+      for (const url of attachmentUrls) {
+        formData.append("attachmentUrls", url);
+      }
+
       const result = await submitContact(formData);
 
       if (result.success) {
         // Confirmation + reset (Req 8.4).
         setValues(EMPTY_VALUES);
+        setFiles([]);
         setHoneypot("");
         setFieldErrors({});
         setFormError(undefined);
@@ -179,8 +286,12 @@ export function ContactForm({
       toast.show({ variant: "error", message });
     } catch {
       // Network/unexpected client-side failure: keep data, show a message.
-      setFormError(CONTACT_GENERIC_ERROR);
-      toast.show({ variant: "error", message: CONTACT_GENERIC_ERROR });
+      const message =
+        files.length > 0
+          ? "Something went wrong uploading your files. Please try again."
+          : CONTACT_GENERIC_ERROR;
+      setFormError(message);
+      toast.show({ variant: "error", message });
     } finally {
       setSubmitting(false);
     }
@@ -268,6 +379,44 @@ export function ContactForm({
                 />
               )}
             </Field>
+
+            <Field
+              label="Project files"
+              description={FILE_HINT}
+              error={fieldErrors.attachmentUrls}
+            >
+              {(control) => (
+                <Input
+                  {...control}
+                  name="attachments"
+                  type="file"
+                  accept={CONTACT_ATTACHMENT_ACCEPT}
+                  multiple
+                  onChange={handleFilesChange}
+                  className="cursor-pointer file:mr-space-3 file:rounded-md file:border-0 file:bg-accent/15 file:px-space-2 file:py-1 file:font-sans file:text-caption file:font-medium file:text-accent"
+                />
+              )}
+            </Field>
+
+            {files.length > 0 ? (
+              <ul className="flex flex-col gap-space-1 font-sans text-caption text-muted">
+                {files.map((file, index) => (
+                  <li
+                    key={`${file.name}-${file.size}-${index}`}
+                    className="flex items-center justify-between gap-space-3"
+                  >
+                    <span className="truncate text-text">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="shrink-0 rounded-sm text-muted underline-offset-2 transition-colors hover:text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
 
             {/*
              * Honeypot (Req 8.7): hidden from humans and assistive tech, and

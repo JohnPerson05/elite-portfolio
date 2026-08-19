@@ -117,6 +117,12 @@ export interface ContactSubmissionView {
   /** Submitter's company/affiliation; omitted when not provided. */
   company?: string;
   message: string;
+  /** Public URLs for idea files uploaded with the inquiry. */
+  attachmentUrls: string[];
+  /** Whether the owner has opened this inquiry. */
+  read: boolean;
+  /** ISO-8601 string for when the inquiry was first opened; omitted while unread. */
+  readAt?: string;
   /** ISO-8601 string for when the submission was received. */
   submittedAt: string;
 }
@@ -205,6 +211,9 @@ export function toContactSubmissionView(
     email: submission.email,
     company: submission.company ?? undefined,
     message: submission.message,
+    attachmentUrls: submission.attachmentUrls ?? [],
+    read: Boolean(submission.readAt),
+    readAt: submission.readAt ? submission.readAt.toISOString() : undefined,
     submittedAt: submission.createdAt.toISOString(),
   };
 }

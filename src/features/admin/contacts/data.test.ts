@@ -7,17 +7,19 @@ vi.mock("@/lib/prisma", () => {
   const client = {
     contactSubmission: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
     },
   };
   return { __esModule: true, default: client, prisma: client };
 });
 
 import prisma from "@/lib/prisma";
-import { getContactSubmissions } from "./data";
+import { getContactSubmissionById, getContactSubmissions } from "./data";
 
 const mockedPrisma = prisma as unknown as {
   contactSubmission: {
     findMany: ReturnType<typeof vi.fn>;
+    findUnique: ReturnType<typeof vi.fn>;
   };
 };
 
@@ -33,7 +35,9 @@ function makeRow(
     email: `${id}@example.com`,
     company: null,
     message: `Message ${id}`,
+    attachmentUrls: [],
     createdAt,
+    readAt: null,
     ...overrides,
   };
 }
@@ -97,5 +101,36 @@ describe("getContactSubmissions — recency ordering (Property 10; Req 12.3)", (
     mockedPrisma.contactSubmission.findMany.mockResolvedValueOnce([]);
 
     await expect(getContactSubmissions()).resolves.toEqual([]);
+  });
+});
+
+describe("getContactSubmissionById", () => {
+  it("returns a serializable DTO for a matching row", async () => {
+    mockedPrisma.contactSubmission.findUnique.mockResolvedValueOnce(
+      makeRow("solo", new Date("2025-02-20T09:15:00.000Z"), {
+        attachmentUrls: [
+          "https://example.blob.vercel-storage.com/contact-ideas/brief.pdf",
+        ],
+      }),
+    );
+
+    const submission = await getContactSubmissionById("solo");
+
+    expect(mockedPrisma.contactSubmission.findUnique).toHaveBeenCalledWith({
+      where: { id: "solo" },
+    });
+    expect(submission?.id).toBe("solo");
+    expect(submission?.attachmentUrls).toHaveLength(1);
+    expect(submission?.read).toBe(false);
+  });
+
+  it("returns null when the id is missing or empty", async () => {
+    await expect(getContactSubmissionById("")).resolves.toBeNull();
+    expect(mockedPrisma.contactSubmission.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("returns null when no row exists", async () => {
+    mockedPrisma.contactSubmission.findUnique.mockResolvedValueOnce(null);
+    await expect(getContactSubmissionById("missing")).resolves.toBeNull();
   });
 });

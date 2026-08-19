@@ -17,13 +17,13 @@ export default function ContactPage() {
         index="06"
         eyebrow="Start a project"
         title="Bring the ambitious brief."
-        description="Share the goal, current constraints, and what success should look like. You will get a clear response on fit, possible direction, and the next useful step."
+        description="Share the goal, current constraints, and what success should look like. Attach a brief, mockup, or sketch if you have one — PDF, Word, or images are welcome."
         status="Accepting new conversations"
       />
       <ContactForm
         eyebrow="Project intake"
         heading="Tell me what you are building"
-        description="Apps, interactive websites, product platforms, and selective engineering partnerships."
+        description="Apps, interactive websites, product platforms, and selective engineering partnerships. Attach PDFs, Word docs, or images of your idea if that helps."
       />
     </>
   );

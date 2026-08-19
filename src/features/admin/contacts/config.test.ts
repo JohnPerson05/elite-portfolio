@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ContactSubmissionView } from "@/types";
-import { formatSubmittedAt, sortByRecency } from "./config";
+import { formatSubmittedAt, previewMessage, filesLabel, sortByRecency } from "./config";
 
 function makeSubmission(
   id: string,
@@ -15,6 +15,8 @@ function makeSubmission(
     company: undefined,
     message: `Message ${id}`,
     submittedAt,
+    attachmentUrls: [],
+    read: false,
     ...overrides,
   };
 }
@@ -56,5 +58,25 @@ describe("formatSubmittedAt — stable UTC timestamp", () => {
 
   it("returns an empty string for an unparseable value", () => {
     expect(formatSubmittedAt("not-a-date")).toBe("");
+  });
+});
+
+describe("previewMessage", () => {
+  it("truncates long messages with an ellipsis", () => {
+    const preview = previewMessage("a".repeat(200), 20);
+    expect(preview.endsWith("…")).toBe(true);
+    expect(preview.length).toBeLessThanOrEqual(21);
+  });
+
+  it("returns a short message unchanged", () => {
+    expect(previewMessage("Hello there")).toBe("Hello there");
+  });
+});
+
+describe("filesLabel", () => {
+  it("describes zero, one, and many files", () => {
+    expect(filesLabel(0)).toBe("No files");
+    expect(filesLabel(1)).toBe("1 file");
+    expect(filesLabel(3)).toBe("3 files");
   });
 });

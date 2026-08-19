@@ -86,6 +86,7 @@ describe("submitContact — validated persistence (Property 4; Req 8.2, 13.4)", 
         email: "ada@example.com",
         company: "Analytical Engines",
         message: "I would love to discuss an opportunity with your team.",
+        attachmentUrls: [],
       },
     });
 
@@ -111,6 +112,30 @@ describe("submitContact — validated persistence (Property 4; Req 8.2, 13.4)", 
         email: "ada@example.com",
         company: undefined,
         message: "I would love to discuss an opportunity with your team.",
+        attachmentUrls: [],
+      },
+    });
+  });
+
+  it("persists Blob attachment URLs submitted with the inquiry", async () => {
+    mockedPrisma.contactSubmission.create.mockResolvedValueOnce({
+      id: "contact_3",
+    });
+    const attachmentUrl =
+      "https://example.blob.vercel-storage.com/contact-ideas/brief.pdf";
+    const formData = buildFormData();
+    formData.append("attachmentUrls", attachmentUrl);
+
+    const result = await submitContact(formData);
+
+    expect(result).toEqual({ success: true });
+    expect(mockedPrisma.contactSubmission.create).toHaveBeenCalledWith({
+      data: {
+        name: "Ada Lovelace",
+        email: "ada@example.com",
+        company: "Analytical Engines",
+        message: "I would love to discuss an opportunity with your team.",
+        attachmentUrls: [attachmentUrl],
       },
     });
   });
@@ -145,6 +170,20 @@ describe("submitContact — validation failures persist nothing (Req 8.3, 8.6; P
     expect(result.success).toBe(false);
     if (result.success === false) {
       expect(result.fieldErrors?.message).toBeDefined();
+    }
+    expect(mockedPrisma.contactSubmission.create).not.toHaveBeenCalled();
+    expect(mockedRecordEvent).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-Blob attachment URL and does not persist", async () => {
+    const formData = buildFormData();
+    formData.append("attachmentUrls", "https://evil.example/payload.exe");
+
+    const result = await submitContact(formData);
+
+    expect(result.success).toBe(false);
+    if (result.success === false) {
+      expect(result.fieldErrors?.attachmentUrls).toBeDefined();
     }
     expect(mockedPrisma.contactSubmission.create).not.toHaveBeenCalled();
     expect(mockedRecordEvent).not.toHaveBeenCalled();

@@ -70,12 +70,12 @@ export async function submitContact(
     };
   }
 
-  const { name, email, company, message } = parsed.data;
+  const { name, email, company, message, attachmentUrls } = parsed.data;
 
   // 4. Persist, then record the event (Req 8.2, 13.4; Properties 4 & 5).
   try {
     await prisma.contactSubmission.create({
-      data: { name, email, company, message },
+      data: { name, email, company, message, attachmentUrls },
     });
   } catch (error) {
     // Unexpected DB failure: surface a form-level error so the client can keep

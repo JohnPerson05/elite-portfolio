@@ -203,4 +203,25 @@ describe("parseContactFormData", () => {
       expect(result.error.flatten().fieldErrors.email).toBeDefined();
     }
   });
+
+  it("accepts Blob attachment URLs from FormData", () => {
+    const fd = toFormData(validInput);
+    fd.append(
+      "attachmentUrls",
+      "https://store.blob.vercel-storage.com/contact-ideas/mockup.webp",
+    );
+    const result = parseContactFormData(fd);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.attachmentUrls).toEqual([
+        "https://store.blob.vercel-storage.com/contact-ideas/mockup.webp",
+      ]);
+    }
+  });
+
+  it("rejects a non-Blob attachment URL", () => {
+    const fd = toFormData(validInput);
+    fd.append("attachmentUrls", "https://example.com/not-a-blob.pdf");
+    expect(parseContactFormData(fd).success).toBe(false);
+  });
 });
